@@ -36,16 +36,13 @@ README.md
 
 ### Starten
 ```bash
-# bevorzugt aus dem Backend-Ordner
+
 cd backend
 npm install
 npm run dev   # Start mit nodemon
 # oder
 npm start     # Normaler Start
 
-# alternativ aus dem Projekt-Root (vermeidet "package.json nicht gefunden")
-npm run install:backend
-npm run dev:backend
 ```
 
 ### API-Endpunkte
@@ -61,7 +58,7 @@ npm run dev:backend
 
 ### Starten
 ```bash
-# bevorzugt aus dem Frontend-Ordner
+
 cd frontend
 npm install
 npm run dev    # startet Vite Dev Server
@@ -69,16 +66,11 @@ npm run dev    # startet Vite Dev Server
 npm run build
 npm run preview
 
-# alternativ aus dem Projekt-Root
-npm run install:frontend
-npm run dev:frontend
-```
 
 ### Seiten
 - `/games` → Spiele-Liste, Eingabe von Tipps je Spiel.
 - `/scoreboard` → Rangliste mit Gesamtpunkten.
 
 ## So startest du das komplette Projekt
-1. Backend starten (`npm run dev` im Ordner `backend` **oder** `npm run dev:backend` im Projekt-Root). Server läuft auf **http://localhost:4000**.
-2. Frontend starten (`npm run dev` im Ordner `frontend` **oder** `npm run dev:frontend` im Projekt-Root). Frontend läuft auf **http://localhost:5173**.
+
 3. Über `/games` Tipps abgeben, über `/scoreboard` Punkte einsehen.
