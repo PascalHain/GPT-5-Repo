@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:4000';
-const STORAGE_KEY = 'kickbase-wm-lineup';
-const STORAGE_SAVED_AT_KEY = 'kickbase-wm-lineup-saved-at';
+const STORAGE_KEY = 'kickbase-wm-lineup-v2';
+const STORAGE_SAVED_AT_KEY = 'kickbase-wm-lineup-saved-at-v2';
 
 const kickbaseFavorites = [
   { code: 'ARG', name: 'Argentinien', flag: '🇦🇷', ranking: 1 },
@@ -11,14 +9,10 @@ const kickbaseFavorites = [
   { code: 'BRA', name: 'Brasilien', flag: '🇧🇷', ranking: 3 },
   { code: 'ENG', name: 'England', flag: '🏴', ranking: 4 },
   { code: 'ESP', name: 'Spanien', flag: '🇪🇸', ranking: 7 },
-  { code: 'POR', name: 'Portugal', flag: '🇵🇹', ranking: 9 },
   { code: 'GER', name: 'Deutschland', flag: '🇩🇪', ranking: 12 },
-  { code: 'BEL', name: 'Belgien', flag: '🇧🇪', ranking: 5 },
-  { code: 'NED', name: 'Niederlande', flag: '🇳🇱', ranking: 8 },
-  { code: 'MAR', name: 'Marokko', flag: '🇲🇦', ranking: 10 },
 ];
 
-const preferredCodes = ['ARG', 'FRA', 'BRA', 'ENG', 'ESP', 'POR', 'GER', 'NED', 'BEL', 'MAR'];
+const topTeamCodes = ['ARG', 'FRA', 'BRA', 'ENG', 'ESP', 'GER'];
 
 const baseSlots = [
   { id: 'gk', label: 'Torwart', lane: 'keeper', top: 82, left: 50 },
@@ -32,6 +26,7 @@ const baseSlots = [
   { id: 'lw', label: 'Linksaußen', lane: 'attack', top: 30, left: 25 },
   { id: 'st', label: 'Mittelstürmer', lane: 'attack', top: 24, left: 50 },
   { id: 'rw', label: 'Rechtsaußen', lane: 'attack', top: 30, left: 75 },
+  { id: 'joker', label: 'Joker', lane: 'bench', top: 90, left: 12 },
 ];
 
 const bestXIByTeam = {
@@ -55,7 +50,7 @@ const bestXIByTeam = {
     cb2: 'William Saliba',
     rb: 'Jules Koundé',
     dm: 'Aurélien Tchouaméni',
-    cm: 'Adrien Rabiot',
+    cm: 'Jude Bellingham',
     am: 'Antoine Griezmann',
     lw: 'Kylian Mbappé',
     st: 'Olivier Giroud',
@@ -87,32 +82,6 @@ const bestXIByTeam = {
     st: 'Harry Kane',
     rw: 'Bukayo Saka',
   },
-  BEL: {
-    gk: 'Koen Casteels',
-    lb: 'Arthur Theate',
-    cb1: 'Wout Faes',
-    cb2: 'Zeno Debast',
-    rb: 'Timothy Castagne',
-    dm: 'Amadou Onana',
-    cm: 'Youri Tielemans',
-    am: 'Kevin De Bruyne',
-    lw: 'Jérémy Doku',
-    st: 'Romelu Lukaku',
-    rw: 'Leandro Trossard',
-  },
-  CRO: {
-    gk: 'Dominik Livaković',
-    lb: 'Borna Sosa',
-    cb1: 'Joško Gvardiol',
-    cb2: 'Domagoj Vida',
-    rb: 'Josip Juranović',
-    dm: 'Marcelo Brozović',
-    cm: 'Mateo Kovačić',
-    am: 'Luka Modrić',
-    lw: 'Andrej Kramarić',
-    st: 'Bruno Petković',
-    rw: 'Ivan Perišić',
-  },
   ESP: {
     gk: 'Unai Simón',
     lb: 'Alejandro Grimaldo',
@@ -126,45 +95,6 @@ const bestXIByTeam = {
     st: 'Álvaro Morata',
     rw: 'Lamine Yamal',
   },
-  NED: {
-    gk: 'Justin Bijlow',
-    lb: 'Nathan Aké',
-    cb1: 'Virgil van Dijk',
-    cb2: 'Matthijs de Ligt',
-    rb: 'Denzel Dumfries',
-    dm: 'Marten de Roon',
-    cm: 'Frenkie de Jong',
-    am: 'Xavi Simons',
-    lw: 'Cody Gakpo',
-    st: 'Memphis Depay',
-    rw: 'Steven Bergwijn',
-  },
-  POR: {
-    gk: 'Diogo Costa',
-    lb: 'Nuno Mendes',
-    cb1: 'Rúben Dias',
-    cb2: 'António Silva',
-    rb: 'João Cancelo',
-    dm: 'João Palhinha',
-    cm: 'Bruno Fernandes',
-    am: 'Bernardo Silva',
-    lw: 'João Félix',
-    st: 'Gonçalo Ramos',
-    rw: 'Diogo Jota',
-  },
-  MAR: {
-    gk: 'Yassine Bounou',
-    lb: 'Noussair Mazraoui',
-    cb1: 'Romain Saïss',
-    cb2: 'Nayef Aguerd',
-    rb: 'Achraf Hakimi',
-    dm: 'Sofyan Amrabat',
-    cm: 'Azzedine Ounahi',
-    am: 'Hakim Ziyech',
-    lw: 'Sofiane Boufal',
-    st: 'Youssef En-Nesyri',
-    rw: 'Abdelhamid Sabiri',
-  },
   GER: {
     gk: 'Manuel Neuer',
     lb: 'David Raum',
@@ -172,7 +102,7 @@ const bestXIByTeam = {
     cb2: 'Jonathan Tah',
     rb: 'Joshua Kimmich',
     dm: 'Robert Andrich',
-    cm: 'Ilkay Gündogan',
+    cm: 'İlkay Gündoğan',
     am: 'Jamal Musiala',
     lw: 'Leroy Sané',
     st: 'Niclas Füllkrug',
@@ -180,462 +110,266 @@ const bestXIByTeam = {
   },
 };
 
-function KickbasePage() {
-  const [teams, setTeams] = useState([]);
-  const [status, setStatus] = useState('');
-  const [savedAt, setSavedAt] = useState('');
-  const [activeTemplate, setActiveTemplate] = useState('');
-  const [selectedSlot, setSelectedSlot] = useState('gk');
-  const [activeSubTab, setActiveSubTab] = useState('startelf');
-  const [teamFilter, setTeamFilter] = useState('');
-  const [laneFilter, setLaneFilter] = useState('');
-  const [lineup, setLineup] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        return baseSlots.map((slot) => parsed.find((p) => p.id === slot.id) || { ...slot, player: '', teamCode: '' });
-      } catch (error) {
-        console.warn('Konnte gespeichertes Lineup nicht laden', error);
-      }
+const flagForTeam = (code) => kickbaseFavorites.find((t) => t.code === code)?.flag || '🏳️';
+
+const buildPlayerPool = () => {
+  const pool = [];
+  topTeamCodes.forEach((code) => {
+    const lineup = bestXIByTeam[code];
+    Object.entries(lineup).forEach(([position, name]) => {
+      pool.push({
+        id: `${code}-${position}`,
+        name,
+        position,
+        teamCode: code,
+        flag: flagForTeam(code),
+      });
+    });
+  });
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 12);
+};
+
+const seedLineupFromPool = (pool) =>
+  baseSlots.map((slot) => {
+    const match = pool.find((p) => p.position === slot.id);
+    if (match) {
+      return { ...slot, player: match.name, teamCode: match.teamCode, flag: match.flag, fromPoolId: match.id };
     }
-    return baseSlots.map((slot) => ({ ...slot, player: '', teamCode: '' }));
+    const fallback = pool.find((p) => p.position.includes(slot.lane)) || pool[0];
+    if (fallback) {
+      return { ...slot, player: fallback.name, teamCode: fallback.teamCode, flag: fallback.flag, fromPoolId: fallback.id };
+    }
+    return { ...slot, player: '', teamCode: '', flag: '' };
   });
 
-  const fetchTeams = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/teams`);
-      if (!res.ok) {
-        throw new Error('Server antwortet nicht erfolgreich.');
-      }
-      const data = await res.json();
-      setTeams(data);
-      setStatus('Teams geladen – wähle deine Favoriten.');
-    } catch (error) {
-      setStatus('Teams konnten nicht geladen werden. Fallback: Top 10 Ranking geladen.');
-      setTeams(kickbaseFavorites);
-    }
-  };
+function KickbasePage() {
+  const [playerPool, setPlayerPool] = useState([]);
+  const [lineup, setLineup] = useState(baseSlots);
+  const [selectedSlot, setSelectedSlot] = useState('gk');
+  const [savedAt, setSavedAt] = useState('');
+  const [activeTab, setActiveTab] = useState('team');
+  const [status, setStatus] = useState('');
 
   useEffect(() => {
-    fetchTeams();
-    const savedTime = localStorage.getItem(STORAGE_SAVED_AT_KEY);
-    if (savedTime) setSavedAt(savedTime);
+    const storedLineup = localStorage.getItem(STORAGE_KEY);
+    const storedSavedAt = localStorage.getItem(STORAGE_SAVED_AT_KEY);
+    const pool = buildPlayerPool();
+    setPlayerPool(pool);
+
+    if (storedLineup) {
+      try {
+        const parsed = JSON.parse(storedLineup);
+        setLineup(baseSlots.map((slot) => parsed.find((p) => p.id === slot.id) || slot));
+      } catch (error) {
+        setLineup(seedLineupFromPool(pool));
+      }
+    } else {
+      setLineup(seedLineupFromPool(pool));
+    }
+
+    if (storedSavedAt) {
+      setSavedAt(storedSavedAt);
+    }
   }, []);
 
-  useEffect(() => {
-    const slot = lineup.find((item) => item.id === selectedSlot);
-    if (slot) {
-      setLaneFilter(slot.lane);
-    }
-  }, [selectedSlot, lineup]);
-
-  const topTeams = useMemo(() => {
-    if (teams.length === 0) {
-      return preferredCodes
-        .map((code) => kickbaseFavorites.find((team) => team.code === code))
-        .filter(Boolean);
-    }
-
-    const byCode = new Map(teams.map((team) => [team.code, team]));
-    const preferred = preferredCodes
-      .map((code) => byCode.get(code) || kickbaseFavorites.find((team) => team.code === code))
-      .filter(Boolean);
-
-    const remaining = teams
-      .filter((team) => !preferredCodes.includes(team.code))
-      .sort((a, b) => a.ranking - b.ranking);
-
-    return [...preferred, ...remaining].slice(0, 10);
-  }, [teams]);
-
-  useEffect(() => {
-    if (!activeTemplate && topTeams.length > 0) {
-      setActiveTemplate(topTeams[0].code);
-    }
-  }, [activeTemplate, topTeams]);
-
-  const filledCount = lineup.filter((slot) => slot.player && slot.teamCode).length;
-  const teamUsage = useMemo(() => {
-    const usage = {};
-    lineup.forEach((slot) => {
-      if (!slot.teamCode) return;
-      usage[slot.teamCode] = (usage[slot.teamCode] || 0) + 1;
-    });
-    return usage;
-  }, [lineup]);
-
-  const handleChange = (slotId, field, value) => {
+  const assignPlayer = (slotId, player) => {
     setLineup((prev) =>
       prev.map((slot) =>
-        slot.id === slotId
-          ? {
-              ...slot,
-              [field]: value,
-            }
-          : slot,
+        slot.id === slotId ? { ...slot, player: player.name, teamCode: player.teamCode, flag: player.flag, fromPoolId: player.id } : slot,
       ),
     );
+    setSelectedSlot(slotId);
+    setStatus(`${player.flag} ${player.name} in ${slotId.toUpperCase()} übernommen.`);
   };
 
-  const playerPool = useMemo(() => {
-    return topTeams.flatMap((team) => {
-      const template = bestXIByTeam[team.code];
-      if (!template) return [];
-
-      return baseSlots
-        .map((slot) => ({
-          id: `${team.code}-${slot.id}`,
-          player: template[slot.id] || '',
-          position: slot.label,
-          lane: slot.lane,
-          teamCode: team.code,
-          teamName: team.name,
-          flag: team.flag,
-        }))
-        .filter((entry) => entry.player);
-    });
-  }, [topTeams]);
-
-  const applyTemplate = (teamCode) => {
-    const template = bestXIByTeam[teamCode];
-    if (!template) {
-      setStatus('Für dieses Team liegt keine Startelf-Vorlage vor.');
-      return;
-    }
-
-    setActiveTemplate(teamCode);
-    setLineup((prev) =>
-      baseSlots.map((slot) => ({
-        ...slot,
-        player: template[slot.id] || '',
-        teamCode,
-      })),
-    );
-    setStatus(`Startelf ${teamCode} übernommen – jetzt nach Wunsch anpassen.`);
-    setSelectedSlot('gk');
+  const updateName = (slotId, name) => {
+    setLineup((prev) => prev.map((slot) => (slot.id === slotId ? { ...slot, player: name } : slot)));
   };
 
-  const handleSave = () => {
-    if (filledCount === 0) {
-      setStatus('Bitte mindestens einen Spieler mit Team auswählen.');
-      return;
-    }
-    const time = new Date().toLocaleString();
-    setSavedAt(time);
-    setStatus(`Aufstellung gespeichert um ${time}.`);
+  const saveLineup = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lineup));
-    localStorage.setItem(STORAGE_SAVED_AT_KEY, time);
+    const timestamp = new Date().toLocaleString();
+    localStorage.setItem(STORAGE_SAVED_AT_KEY, timestamp);
+    setSavedAt(timestamp);
+    setStatus('Aufstellung gespeichert.');
   };
 
-  const assignPlayerToSlot = (slotId, playerEntry) => {
-    setLineup((prev) =>
-      prev.map((slot) =>
-        slot.id === slotId
-          ? {
-              ...slot,
-              player: playerEntry.player,
-              teamCode: playerEntry.teamCode,
-            }
-          : slot,
-      ),
-    );
-    setStatus(`${playerEntry.player} (${playerEntry.teamName}) gesetzt auf ${baseSlots.find((s) => s.id === slotId)?.label || 'Slot'}.`);
+  const reshufflePool = () => {
+    const pool = buildPlayerPool();
+    setPlayerPool(pool);
+    setLineup(seedLineupFromPool(pool));
+    setStatus('Neuer 12er-Pool geladen und 4-3-3 befüllt.');
   };
 
-  const filteredPool = useMemo(() => {
-    return playerPool.filter((entry) => {
-      const matchesTeam = teamFilter ? entry.teamCode === teamFilter : true;
-      const matchesLane = laneFilter ? entry.lane === laneFilter : true;
-      return matchesTeam && matchesLane;
-    });
-  }, [laneFilter, playerPool, teamFilter]);
+  const selectedData = lineup.find((slot) => slot.id === selectedSlot) || lineup[0];
+
+  const unassignedPool = useMemo(() => {
+    const usedIds = new Set(lineup.map((slot) => slot.fromPoolId));
+    return playerPool.filter((p) => !usedIds.has(p.id));
+  }, [lineup, playerPool]);
 
   return (
-    <div>
-      <div className="mode-tabs">
-        <Link className="mode-tab" to="/games">
-          Kicktipp (Tippspiel)
-        </Link>
-        <button className="mode-tab active" type="button">
-          Kickbase (Simulator)
-        </button>
-      </div>
-
-      <div className="page-header">
+    <div className="stack-xl">
+      <div className="mode-header">
         <div>
           <p className="eyebrow">Kickbase WM</p>
-          <h2 className="section-title">Deine Fantasy-Aufstellung</h2>
-          <p className="muted">
-            Wähle Spieler aus zehn Top-Nationen (Deutschland ist fix dabei) und stelle deine Startelf. Alles lokal gespeichert –
-            perfekt zum Durchspielen vor dem Turnierstart.
-          </p>
+          <h1>Dashboard mit Team, News, Transfermarkt & Live-Punkte</h1>
+          <p className="muted">Top 5 + Deutschland, zufälliger 12er-Pool und 4-3-3 Aufstellung wie bei Kickbase.</p>
         </div>
-        <button className="button ghost" onClick={fetchTeams}>
-          Teams neu laden
-        </button>
-      </div>
-
-      <div className="stepper">
-        <div className="step">
-          <span className="pill tiny">1</span>
-          <div>
-            <p className="muted very-small">Modus wählen</p>
-            <p className="step-title">Kickbase Simulator aktiv</p>
-          </div>
-        </div>
-        <div className="step">
-          <span className="pill tiny">2</span>
-          <div>
-            <p className="muted very-small">Vorlage klicken</p>
-            <p className="step-title">Top-Team übernehmen</p>
-          </div>
-        </div>
-        <div className="step">
-          <span className="pill tiny">3</span>
-          <div>
-            <p className="muted very-small">Slots füllen</p>
-            <p className="step-title">Spieler antippen & speichern</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="subtabs">
-        <button
-          className={`subtab ${activeSubTab === 'startelf' ? 'active' : ''}`}
-          type="button"
-          onClick={() => setActiveSubTab('startelf')}
-        >
-          Startelf & Pitch
-        </button>
-        <button
-          className={`subtab ${activeSubTab === 'scouting' ? 'active' : ''}`}
-          type="button"
-          onClick={() => setActiveSubTab('scouting')}
-        >
-          Scouting & Spielerwahl
-        </button>
-      </div>
-
-      <section className="card">
-        <header className="card-header">
-          <div>
-            <p className="eyebrow">Auswahl</p>
-            <h3 className="card-title">Top 10 Nationen für Kickbase</h3>
-            <p className="muted small">
-              Basierend auf dem hinterlegten WM-2026-Ranking (zzgl. Deutschland als Pflichtpick), inkl. Flaggen, Gruppen und
-              Mini-Storylines. Startelf-Buttons laden direkt eine Kickbase-taugliche 4-3-3.
-            </p>
-          </div>
-        </header>
-        <div className="team-grid">
-          {topTeams.map((team) => (
-            <article key={team.code} className="team-card">
-              <header className="team-card-header">
-                <span className="flag big">{team.flag}</span>
-                <div>
-                  <p className="eyebrow">#{team.ranking}</p>
-                  <h4 className="card-title">{team.name}</h4>
-                  {team.groupId && (
-                    <p className="muted very-small">Gruppe {team.groupId}</p>
-                  )}
-                </div>
-              </header>
-              <p className="muted very-small">{team.storyline || 'Top-Favorit laut Ranking.'}</p>
-              {bestXIByTeam[team.code] && (
-                <div className="mini-xi">
-                  {Object.entries(bestXIByTeam[team.code]).map(([key, player]) => (
-                    <span key={key} className="pill tiny">
-                      {player}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <button className="button ghost" onClick={() => applyTemplate(team.code)}>
-                Startelf übernehmen
-              </button>
-            </article>
+        <div className="mode-tabs center">
+          {['team', 'news', 'transfer', 'live'].map((id) => (
+            <button key={id} className={activeTab === id ? 'mode-tab active' : 'mode-tab'} onClick={() => setActiveTab(id)}>
+              {id === 'team' && 'Team'}
+              {id === 'news' && 'News'}
+              {id === 'transfer' && 'Transfermarkt'}
+              {id === 'live' && 'Live-Punkte'}
+            </button>
           ))}
         </div>
-      </section>
-
-      <div className="template-rail">
-        {topTeams.map((team) => (
-          <button
-            key={team.code}
-            className={`rail-chip ${activeTemplate === team.code ? 'active' : ''}`}
-            onClick={() => applyTemplate(team.code)}
-          >
-            <span className="flag">{team.flag}</span>
-            <span className="rail-name">{team.name}</span>
-          </button>
-        ))}
       </div>
 
-      {activeSubTab === 'startelf' && (
-        <section className="card">
-          <header className="card-header lineup-head">
-            <div>
-              <p className="eyebrow">Aufstellung</p>
-              <h3 className="card-title">Startelf auf dem Spielfeld</h3>
-              <p className="muted small">Visuelles Feld mit 4-3-3 – Slot antippen, dann Spieler aus dem Scouting wählen.</p>
-            </div>
-            <div className="save-stack">
-              <div className="pill-stats">
-                <span className="pill">{filledCount}/11 Plätze besetzt</span>
-                <span className="pill ghost">Aktive Vorlage: {activeTemplate || 'frei'}</span>
-              </div>
-              <button className="button" onClick={handleSave}>
-                Aufstellung speichern
+      {activeTab === 'team' && (
+        <div className="grid-2">
+          <div className="card stack-md">
+            <div className="card-header-row">
+              <h2>Spielerpool (12 zufällig)</h2>
+              <button className="ghost" onClick={reshufflePool}>
+                Pool neu mischen
               </button>
-              {savedAt && <span className="save-indicator saved">Gespeichert um {savedAt}</span>}
             </div>
-          </header>
-
-          <div className="lineup-layout">
-            <div className="pitch-panel">
-              <div className="pitch">
-                <div className="pitch-lines" aria-hidden />
-                <div className="pitch-legend">
-                  <p className="muted tiny">4-3-3 mit klaren Lanes – klicke einen Slot zum Bearbeiten.</p>
-                </div>
-                {lineup.map((slot) => {
-                  const team = topTeams.find((t) => t.code === slot.teamCode);
-                  const isActive = selectedSlot === slot.id;
-                  return (
-                    <button
-                      type="button"
-                      key={slot.id}
-                      className={`pitch-slot ${isActive ? 'active' : ''}`}
-                      style={{ left: `${slot.left}%`, top: `${slot.top}%` }}
-                      onClick={() => setSelectedSlot(slot.id)}
-                    >
-                      <div className="player-chip">
-                        <span className="flag">{team?.flag || '⚽️'}</span>
-                        <div>
-                          <p className="player-name">{slot.player || 'Spieler wählen'}</p>
-                          <p className="muted tiny">{slot.label}</p>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="lineup-editor">
-              <div className="lane-grid">
-                {lineup.map((slot) => (
-                  <div key={slot.id} className={`lineup-card ${selectedSlot === slot.id ? 'selected' : ''}`}>
-                    <div className="lineup-card-head">
-                      <p className="muted very-small">{slot.label}</p>
-                      <span className="pill tiny">{slot.id.toUpperCase()}</span>
-                    </div>
-                    <div className="slot-actions">
-                      <button className="button ghost" type="button" onClick={() => setSelectedSlot(slot.id)}>
-                        Slot aktivieren
-                      </button>
-                      {slot.teamCode && slot.player && <span className="pill tiny positive">gesetzt</span>}
-                    </div>
-                    <input
-                      className="input wide"
-                      value={slot.player}
-                      placeholder="Spielername"
-                      onChange={(e) => handleChange(slot.id, 'player', e.target.value)}
-                    />
-                    <select
-                      className="input wide"
-                      value={slot.teamCode}
-                      onChange={(e) => handleChange(slot.id, 'teamCode', e.target.value)}
-                    >
-                      <option value="">Team wählen</option>
-                      {topTeams.map((team) => (
-                        <option key={team.code} value={team.code}>
-                          {team.flag} {team.name}
-                        </option>
-                      ))}
-                    </select>
-                    {slot.teamCode && (
-                      <p className="muted very-small">{topTeams.find((t) => t.code === slot.teamCode)?.storyline || ''}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="usage-list">
-                <p className="muted small">Team-Kontingent</p>
-                {Object.keys(teamUsage).length === 0 && <p className="muted very-small">Noch keine Auswahl.</p>}
-                {Object.entries(teamUsage)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([code, count]) => {
-                    const team = topTeams.find((t) => t.code === code);
-                    return (
-                      <div key={code} className="usage-row">
-                        <span className="flag">{team?.flag}</span>
-                        <span className="muted small">{team?.name || code}</span>
-                        <span className="pill small">{count}x</span>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {activeSubTab === 'scouting' && (
-        <section className="card">
-          <header className="card-header lineup-head">
-            <div>
-              <p className="eyebrow">Scouting</p>
-              <h3 className="card-title">Spieler antippen & Slot füllen</h3>
-              <p className="muted small">
-                Filtere nach Team oder Linie, tippe einen Spieler und er landet im aktiven Slot ({baseSlots.find((s) => s.id === selectedSlot)?.label}).
-              </p>
-            </div>
-            <div className="filter-bar">
-              <select className="input" value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
-                <option value="">Alle Teams</option>
-                {topTeams.map((team) => (
-                  <option key={team.code} value={team.code}>
-                    {team.flag} {team.name}
-                  </option>
-                ))}
-              </select>
-              <select className="input" value={laneFilter} onChange={(e) => setLaneFilter(e.target.value)}>
-                <option value="">Alle Linien</option>
-                <option value="keeper">Tor</option>
-                <option value="defense">Abwehr</option>
-                <option value="midfield">Mittelfeld</option>
-                <option value="attack">Angriff</option>
-              </select>
-            </div>
-          </header>
-
-          <div className="player-pool">
-            {filteredPool.map((entry) => (
-              <button
-                key={entry.id}
-                type="button"
-                className="player-card"
-                onClick={() => assignPlayerToSlot(selectedSlot, entry)}
-              >
-                <div className="player-card-head">
-                  <span className="flag big">{entry.flag}</span>
+            <p className="muted">Tippe einen Slot auf dem Feld an und klicke dann einen Spieler, um ihn zuzuweisen.</p>
+            <div className="player-pool">
+              {playerPool.map((player) => (
+                <button key={player.id} className="player-chip" onClick={() => assignPlayer(selectedSlot, player)}>
+                  <span className="flag">{player.flag}</span>
                   <div>
-                    <p className="player-name">{entry.player}</p>
-                    <p className="muted very-small">{entry.teamName}</p>
+                    <strong>{player.name}</strong>
+                    <p className="muted">{player.teamCode} · {player.position.toUpperCase()}</p>
                   </div>
-                  <span className="pill tiny ghost">{entry.position}</span>
-                </div>
-                <p className="muted tiny">Antippen, um auf den aktiven Slot zu setzen.</p>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
+            <div className="muted small">Verbleibend unverplant: {unassignedPool.length} Spieler</div>
           </div>
-        </section>
+
+          <div className="card stack-md">
+            <div className="card-header-row">
+              <h2>4-3-3 Spielfeld</h2>
+              <button className="primary" onClick={saveLineup}>Aufstellung speichern</button>
+            </div>
+            <p className="muted">Klick auf eine Position zum Markieren, dann Spieler aus dem Pool zuweisen oder Namen überschreiben.</p>
+            <div className="pitch">
+              {lineup.map((slot) => (
+                <button
+                  key={slot.id}
+                  className={selectedSlot === slot.id ? 'pitch-slot selected' : 'pitch-slot'}
+                  style={{ top: `${slot.top}%`, left: `${slot.left}%` }}
+                  onClick={() => setSelectedSlot(slot.id)}
+                >
+                  <span className="flag">{slot.flag || '⚽'}</span>
+                  <strong>{slot.player || slot.label}</strong>
+                  <p className="muted tiny">{slot.label}</p>
+                </button>
+              ))}
+            </div>
+            <div className="slot-editor">
+              <div>
+                <p className="eyebrow">Ausgewählt</p>
+                <h3>{selectedData?.label}</h3>
+              </div>
+              <div className="field-group">
+                <label>Spielername anpassen</label>
+                <input
+                  type="text"
+                  value={selectedData?.player || ''}
+                  onChange={(e) => updateName(selectedData.id, e.target.value)}
+                  placeholder="Name eintragen"
+                />
+              </div>
+              <div className="field-row">
+                {unassignedPool.slice(0, 3).map((p) => (
+                  <button key={p.id} className="secondary" onClick={() => assignPlayer(selectedData.id, p)}>
+                    {p.flag} {p.name}
+                  </button>
+                ))}
+              </div>
+              {savedAt && <p className="muted tiny">Zuletzt gespeichert: {savedAt}</p>}
+              {status && <p className="status success">{status}</p>}
+            </div>
+          </div>
+        </div>
       )}
 
-      {status && <p className="status info">{status}</p>}
+      {activeTab === 'news' && (
+        <div className="grid-2">
+          <div className="card">
+            <h2>Top-Schlagzeilen</h2>
+            <ul className="bullet-list">
+              <li>Deutschland formt junges 4-3-3 um Musiala und Wirtz.</li>
+              <li>Brasilien setzt auf pfeilschnelles Flügelspiel mit Vini Jr.</li>
+              <li>Messi führt Argentinien erneut als Spielmacher.</li>
+            </ul>
+          </div>
+          <div className="card">
+            <h2>Verletzungen & Sperren</h2>
+            <p className="muted">Aktualisiere deine Startelf, sobald neue Infos droppen.</p>
+            <ul className="bullet-list">
+              <li>England: Shaw fraglich, Walker fit.</li>
+              <li>Spanien: Pedri geschont, Morata gesetzt.</li>
+              <li>Frankreich: Maignan trainiert individuell.</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'transfer' && (
+        <div className="grid-2">
+          <div className="card">
+            <h2>Transfermarkt Trends</h2>
+            <ul className="bullet-list">
+              <li>Beliebt: Mbappé, Musiala, Vinícius Jr.</li>
+              <li>Geheimtipps: Grimaldo, Andrich, En-Nesyri.</li>
+              <li>Torwart-Snipes: Maignan, Alisson, Neuer.</li>
+            </ul>
+          </div>
+          <div className="card">
+            <h2>Budget-Tipps</h2>
+            <p className="muted">Low-Cost Picks für späte Spieltage.</p>
+            <ul className="bullet-list">
+              <li>Hakimi für Flanken & Punkte aus Defensive.</li>
+              <li>Trossard als Joker mit hoher Form.</li>
+              <li>Paquetá für Bonus durch Pässe & Abschlüsse.</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'live' && (
+        <div className="grid-2">
+          <div className="card">
+            <h2>Live-Punkte</h2>
+            <p className="muted">Simulierte Punkteübersicht, aktualisiere während der Matches.</p>
+            <ul className="bullet-list">
+              <li>Messi +15 (Tor, Vorlage)</li>
+              <li>Musiala +12 (Vorlage, Key Passes)</li>
+              <li>Alisson +8 (weiße Weste)</li>
+            </ul>
+          </div>
+          <div className="card">
+            <h2>Form-Heatmap</h2>
+            <p className="muted">Nutze die Heatmap als Reminder, wer zuletzt punktete.</p>
+            <div className="pill-row">
+              {topTeamCodes.map((code) => (
+                <span key={code} className="pill">{flagForTeam(code)} {code}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
