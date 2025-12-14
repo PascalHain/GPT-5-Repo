@@ -8,65 +8,121 @@ app.use(cors());
 app.use(express.json());
 
 
-const baseKickoff = (offsetDays, hour = 19) => {
+const baseKickoff = (offsetDays, hour = 18) => {
+
   const kickoff = new Date(Date.UTC(2026, 5, 12, hour, 0, 0));
   kickoff.setUTCDate(kickoff.getUTCDate() + offsetDays);
   return kickoff.toISOString();
 };
 
+const venues = [
+  'MetLife Stadium (East Rutherford)',
+  'SoFi Stadium (Los Angeles)',
+  'AT&T Stadium (Arlington)',
+  'Arrowhead Stadium (Kansas City)',
+  'Lumen Field (Seattle)',
+  "Levi's Stadium (Santa Clara)",
+  'Mercedes-Benz Stadium (Atlanta)',
+  'Hard Rock Stadium (Miami)',
+  'NRG Stadium (Houston)',
+  'Gillette Stadium (Foxborough)',
+  'BC Place (Vancouver)',
+  'BMO Field (Toronto)',
+  'Estadio Azteca (Mexiko-Stadt)',
+  'Estadio Akron (Guadalajara)',
+  'Estadio BBVA (Monterrey)',
+  'Camping World Stadium (Orlando)',
+  'Lincoln Financial Field (Philadelphia)',
+  'Soldier Field (Chicago)',
+  'State Farm Stadium (Phoenix)',
+  'Estadio Olímpico Universitario (Mexiko-Stadt)',
+
+];
+
+let venueIndex = 0;
+const nextVenue = () => {
+  const venue = venues[venueIndex % venues.length];
+  venueIndex += 1;
+  return venue;
+};
+
 const teams = [
-  { code: 'USA', name: 'USA', flag: '🇺🇸', confed: 'CONCACAF', ranking: 11, groupId: 'A', storyline: 'Gastgeber in Nordamerika' },
-  { code: 'MEX', name: 'Mexiko', flag: '🇲🇽', confed: 'CONCACAF', ranking: 15, groupId: 'A', storyline: 'Co-Gastgeber mit Heimvorteil in Mexiko-Stadt' },
-  { code: 'CAN', name: 'Kanada', flag: '🇨🇦', confed: 'CONCACAF', ranking: 45, groupId: 'A', storyline: 'Gastgeber mit junger Generation um David' },
-  { code: 'POR', name: 'Portugal', flag: '🇵🇹', confed: 'UEFA', ranking: 9, groupId: 'A', storyline: 'Ronaldo-Nachfolger wollen glänzen' },
+  { code: 'USA', name: 'USA', flag: '🇺🇸', confed: 'CONCACAF', ranking: 11, groupId: 'A', storyline: 'Gastgeber-Stolz und Heimvorteil quer durch die Staaten.' },
+  { code: 'MEX', name: 'Mexiko', flag: '🇲🇽', confed: 'CONCACAF', ranking: 15, groupId: 'A', storyline: 'Co-Gastgeber mit Azteken-Magie und voller Stadien.' },
+  { code: 'CAN', name: 'Kanada', flag: '🇨🇦', confed: 'CONCACAF', ranking: 45, groupId: 'A', storyline: 'Heimturnier für Davies & Co. in Vancouver und Toronto.' },
+  { code: 'CRC', name: 'Costa Rica', flag: '🇨🇷', confed: 'CONCACAF', ranking: 42, groupId: 'A', storyline: 'Turnier-Experten mit defensivem Bollwerk.' },
 
-  { code: 'BRA', name: 'Brasilien', flag: '🇧🇷', confed: 'CONMEBOL', ranking: 3, groupId: 'B', storyline: 'Hexa-Jagd mit neuer Offensive' },
-  { code: 'ARG', name: 'Argentinien', flag: '🇦🇷', confed: 'CONMEBOL', ranking: 1, groupId: 'B', storyline: 'Titelverteidiger mit Topstars' },
-  { code: 'COL', name: 'Kolumbien', flag: '🇨🇴', confed: 'CONMEBOL', ranking: 14, groupId: 'B', storyline: 'Starke Copa-Form mit Díaz' },
-  { code: 'ECU', name: 'Ecuador', flag: '🇪🇨', confed: 'CONMEBOL', ranking: 31, groupId: 'B', storyline: 'Tempo-Team aus den Anden' },
+  { code: 'ARG', name: 'Argentinien', flag: '🇦🇷', confed: 'CONMEBOL', ranking: 1, groupId: 'B', storyline: 'Titelverteidiger mit neuer Generation um Julián Álvarez.' },
+  { code: 'PER', name: 'Peru', flag: '🇵🇪', confed: 'CONMEBOL', ranking: 22, groupId: 'B', storyline: 'Kompakte Einheit mit lautstarken Fans.' },
+  { code: 'UKR', name: 'Ukraine', flag: '🇺🇦', confed: 'UEFA', ranking: 24, groupId: 'B', storyline: 'Großer Teamgeist und Tempo auf den Flügeln.' },
+  { code: 'NZL', name: 'Neuseeland', flag: '🇳🇿', confed: 'OFC', ranking: 103, groupId: 'B', storyline: 'Ozeanien-Champion mit Außenseiterchancen.' },
 
-  { code: 'GER', name: 'Deutschland', flag: '🇩🇪', confed: 'UEFA', ranking: 12, groupId: 'C', storyline: 'Dritte WM im Concacaf-Raum' },
-  { code: 'ENG', name: 'England', flag: '🏴', confed: 'UEFA', ranking: 4, groupId: 'C', storyline: 'Golden Generation mit Kane/Nachfolge' },
-  { code: 'NED', name: 'Niederlande', flag: '🇳🇱', confed: 'UEFA', ranking: 8, groupId: 'C', storyline: 'Taktik-Füchse aus Europa' },
-  { code: 'DEN', name: 'Dänemark', flag: '🇩🇰', confed: 'UEFA', ranking: 19, groupId: 'C', storyline: 'Eriksen-Ära 2.0' },
+  { code: 'BRA', name: 'Brasilien', flag: '🇧🇷', confed: 'CONMEBOL', ranking: 3, groupId: 'C', storyline: 'Junge Selecao auf der Jagd nach Stern Nummer 6.' },
+  { code: 'COL', name: 'Kolumbien', flag: '🇨🇴', confed: 'CONMEBOL', ranking: 14, groupId: 'C', storyline: 'Copa-Formstark mit Díaz als Leitfigur.' },
+  { code: 'JPN', name: 'Japan', flag: '🇯🇵', confed: 'AFC', ranking: 20, groupId: 'C', storyline: 'Strukturiertes Pressing und Präzision im Passspiel.' },
+  { code: 'TUR', name: 'Türkei', flag: '🇹🇷', confed: 'UEFA', ranking: 38, groupId: 'C', storyline: 'Leidenschaftliche Fans, talentierter Kader.' },
 
-  { code: 'FRA', name: 'Frankreich', flag: '🇫🇷', confed: 'UEFA', ranking: 2, groupId: 'D', storyline: 'Mbappé will die Krone zurück' },
-  { code: 'ESP', name: 'Spanien', flag: '🇪🇸', confed: 'UEFA', ranking: 7, groupId: 'D', storyline: 'Jugend forscht mit Pedri & Gavi' },
-  { code: 'ITA', name: 'Italien', flag: '🇮🇹', confed: 'UEFA', ranking: 13, groupId: 'D', storyline: 'Rückkehr zur WM-Bühne' },
-  { code: 'SUI', name: 'Schweiz', flag: '🇨🇭', confed: 'UEFA', ranking: 16, groupId: 'D', storyline: 'Stabile Turniermannschaft' },
+  { code: 'FRA', name: 'Frankreich', flag: '🇫🇷', confed: 'UEFA', ranking: 2, groupId: 'D', storyline: 'Mbappé und Co. wollen den Pokal zurück.' },
+  { code: 'SUI', name: 'Schweiz', flag: '🇨🇭', confed: 'UEFA', ranking: 16, groupId: 'D', storyline: 'Stabile Turniermannschaft mit viel Erfahrung.' },
+  { code: 'MLI', name: 'Mali', flag: '🇲🇱', confed: 'CAF', ranking: 47, groupId: 'D', storyline: 'Junges, physisches Team mit Offensivdrang.' },
+  { code: 'QAT', name: 'Katar', flag: '🇶🇦', confed: 'AFC', ranking: 58, groupId: 'D', storyline: 'Asienmeister von 2023 will überraschen.' },
 
-  { code: 'BEL', name: 'Belgien', flag: '🇧🇪', confed: 'UEFA', ranking: 5, groupId: 'E', storyline: 'Letzter Lauf der goldenen Generation' },
-  { code: 'CRO', name: 'Kroatien', flag: '🇭🇷', confed: 'UEFA', ranking: 6, groupId: 'E', storyline: 'Routine und Kampfgeist' },
-  { code: 'MAR', name: 'Marokko', flag: '🇲🇦', confed: 'CAF', ranking: 10, groupId: 'E', storyline: 'Halbfinal-Held:innen von 2022' },
-  { code: 'TUR', name: 'Türkei', flag: '🇹🇷', confed: 'UEFA', ranking: 38, groupId: 'E', storyline: 'Feurige Fans auch in Nordamerika' },
+  { code: 'ENG', name: 'England', flag: '🏴', confed: 'UEFA', ranking: 4, groupId: 'E', storyline: 'Kane-Nachfolge mit vielen Premier-League-Stars.' },
+  { code: 'SEN', name: 'Senegal', flag: '🇸🇳', confed: 'CAF', ranking: 18, groupId: 'E', storyline: 'AFCON-Champions mit Tempo und Physis.' },
+  { code: 'AUS', name: 'Australien', flag: '🇦🇺', confed: 'AFC', ranking: 27, groupId: 'E', storyline: 'Robuste Socceroos mit WM-Routine.' },
+  { code: 'HON', name: 'Honduras', flag: '🇭🇳', confed: 'CONCACAF', ranking: 80, groupId: 'E', storyline: 'Rückkehr auf die große Bühne mit Kampfgeist.' },
 
-  { code: 'JPN', name: 'Japan', flag: '🇯🇵', confed: 'AFC', ranking: 20, groupId: 'F', storyline: 'Technik und Pressing' },
-  { code: 'KOR', name: 'Südkorea', flag: '🇰🇷', confed: 'AFC', ranking: 22, groupId: 'F', storyline: 'Son & Co. on Tour' },
-  { code: 'AUS', name: 'Australien', flag: '🇦🇺', confed: 'AFC', ranking: 27, groupId: 'F', storyline: 'Physisch starkes Team' },
-  { code: 'IRN', name: 'Iran', flag: '🇮🇷', confed: 'AFC', ranking: 21, groupId: 'F', storyline: 'Defensiv kompakt' },
+  { code: 'ESP', name: 'Spanien', flag: '🇪🇸', confed: 'UEFA', ranking: 7, groupId: 'F', storyline: 'Jugend forscht mit Pedri, Gavi und viel Ballbesitz.' },
+  { code: 'NGA', name: 'Nigeria', flag: '🇳🇬', confed: 'CAF', ranking: 32, groupId: 'F', storyline: 'Flügeltempo und Torjäger-Power.' },
+  { code: 'KSA', name: 'Saudi-Arabien', flag: '🇸🇦', confed: 'AFC', ranking: 54, groupId: 'F', storyline: 'Disziplinierte Defensive und gefährliche Konter.' },
+  { code: 'SRB', name: 'Serbien', flag: '🇷🇸', confed: 'UEFA', ranking: 29, groupId: 'F', storyline: 'Torgefahr durch körperliche Stürmer.' },
 
-  { code: 'NGA', name: 'Nigeria', flag: '🇳🇬', confed: 'CAF', ranking: 32, groupId: 'G', storyline: 'Tempo-Flügel und Talent' },
-  { code: 'SEN', name: 'Senegal', flag: '🇸🇳', confed: 'CAF', ranking: 18, groupId: 'G', storyline: 'AFCON-Champions mit Starpower' },
-  { code: 'GHA', name: 'Ghana', flag: '🇬🇭', confed: 'CAF', ranking: 60, groupId: 'G', storyline: 'Junge Truppe mit Kudus' },
-  { code: 'EGY', name: 'Ägypten', flag: '🇪🇬', confed: 'CAF', ranking: 36, groupId: 'G', storyline: 'Salahs vielleicht letzte WM' },
+  { code: 'GER', name: 'Deutschland', flag: '🇩🇪', confed: 'UEFA', ranking: 12, groupId: 'G', storyline: 'Nagelsmann-Ära will in Nordamerika glänzen.' },
+  { code: 'MAR', name: 'Marokko', flag: '🇲🇦', confed: 'CAF', ranking: 10, groupId: 'G', storyline: 'Halbfinal-Helden von 2022 bringen Stabilität.' },
+  { code: 'ECU', name: 'Ecuador', flag: '🇪🇨', confed: 'CONMEBOL', ranking: 31, groupId: 'G', storyline: 'Junge Mannschaft mit viel Intensität.' },
+  { code: 'JAM', name: 'Jamaika', flag: '🇯🇲', confed: 'CONCACAF', ranking: 57, groupId: 'G', storyline: 'Reggae Boyz mit Premier-League-Power.' },
 
-  { code: 'URU', name: 'Uruguay', flag: '🇺🇾', confed: 'CONMEBOL', ranking: 17, groupId: 'H', storyline: 'Valverde-Generation übernimmt' },
-  { code: 'CHI', name: 'Chile', flag: '🇨🇱', confed: 'CONMEBOL', ranking: 28, groupId: 'H', storyline: 'Neustart mit Nachwuchs' },
-  { code: 'POL', name: 'Polen', flag: '🇵🇱', confed: 'UEFA', ranking: 26, groupId: 'H', storyline: 'Lewandowski-Nachfolger im Fokus' },
-  { code: 'SWE', name: 'Schweden', flag: '🇸🇪', confed: 'UEFA', ranking: 23, groupId: 'H', storyline: 'Kompakt und effizient' },
+  { code: 'POR', name: 'Portugal', flag: '🇵🇹', confed: 'UEFA', ranking: 9, groupId: 'H', storyline: 'Post-Ronaldo-Generation mit viel Kreativität.' },
+  { code: 'TUN', name: 'Tunesien', flag: '🇹🇳', confed: 'CAF', ranking: 41, groupId: 'H', storyline: 'Defensiv stark, gefährlich bei Standards.' },
+  { code: 'KOR', name: 'Südkorea', flag: '🇰🇷', confed: 'AFC', ranking: 22, groupId: 'H', storyline: 'Son & Co. mit hohem Pressing.' },
+  { code: 'PAN', name: 'Panama', flag: '🇵🇦', confed: 'CONCACAF', ranking: 44, groupId: 'H', storyline: 'Gold-Cup-Finalist mit klarer Struktur.' },
+
+  { code: 'NED', name: 'Niederlande', flag: '🇳🇱', confed: 'UEFA', ranking: 8, groupId: 'I', storyline: 'Taktisch stark mit Van Dijk als Abwehrchef.' },
+  { code: 'ALG', name: 'Algerien', flag: '🇩🇿', confed: 'CAF', ranking: 43, groupId: 'I', storyline: 'Riyad Mahrez führt ein erfahrenes Team.' },
+  { code: 'IRN', name: 'Iran', flag: '🇮🇷', confed: 'AFC', ranking: 21, groupId: 'I', storyline: 'Solide Defensive, clevere Konter.' },
+  { code: 'PAR', name: 'Paraguay', flag: '🇵🇾', confed: 'CONMEBOL', ranking: 49, groupId: 'I', storyline: 'Kompakte Defensive mit Biss.' },
+
+  { code: 'BEL', name: 'Belgien', flag: '🇧🇪', confed: 'UEFA', ranking: 5, groupId: 'J', storyline: 'Neue Generation will den Umbruch nutzen.' },
+  { code: 'EGY', name: 'Ägypten', flag: '🇪🇬', confed: 'CAF', ranking: 36, groupId: 'J', storyline: 'Salahs (vielleicht) letzte WM.' },
+  { code: 'UZB', name: 'Usbekistan', flag: '🇺🇿', confed: 'AFC', ranking: 67, groupId: 'J', storyline: 'Asiens aufstrebendes Team mit viel Tempo.' },
+  { code: 'GHA', name: 'Ghana', flag: '🇬🇭', confed: 'CAF', ranking: 60, groupId: 'J', storyline: 'Junge Black Stars mit Kudus als Leader.' },
+
+  { code: 'ITA', name: 'Italien', flag: '🇮🇹', confed: 'UEFA', ranking: 13, groupId: 'K', storyline: 'Rückkehr auf die WM-Bühne mit neuer Defensive.' },
+  { code: 'URU', name: 'Uruguay', flag: '🇺🇾', confed: 'CONMEBOL', ranking: 17, groupId: 'K', storyline: 'Valverde-Generation übernimmt das Zepter.' },
+  { code: 'CMR', name: 'Kamerun', flag: '🇨🇲', confed: 'CAF', ranking: 50, groupId: 'K', storyline: 'Unbezähmbare Löwen mit physischer Präsenz.' },
+  { code: 'IRQ', name: 'Irak', flag: '🇮🇶', confed: 'AFC', ranking: 59, groupId: 'K', storyline: 'Gutes Mittelfeld, starke Fans.' },
+
+  { code: 'CRO', name: 'Kroatien', flag: '🇭🇷', confed: 'UEFA', ranking: 6, groupId: 'L', storyline: 'Routine und Modrić-Genie im Mittelfeld.' },
+  { code: 'SWE', name: 'Schweden', flag: '🇸🇪', confed: 'UEFA', ranking: 23, groupId: 'L', storyline: 'Disziplinierte Defensive, gefährliche Standards.' },
+  { code: 'CIV', name: "Elfenbeinküste", flag: '🇨🇮', confed: 'CAF', ranking: 51, groupId: 'L', storyline: 'Afrikameister mit Power-Offensive.' },
+  { code: 'CHI', name: 'Chile', flag: '🇨🇱', confed: 'CONMEBOL', ranking: 28, groupId: 'L', storyline: 'Neustart mit hungriger Generation.' },
 ];
 
 const teamMap = new Map(teams.map((team) => [team.code, team]));
 
 const groups = [
-  { id: 'A', name: 'Nordamerika-Eröffnung', teamCodes: ['USA', 'MEX', 'CAN', 'POR'] },
-  { id: 'B', name: 'Südamerika-Feuer', teamCodes: ['BRA', 'ARG', 'COL', 'ECU'] },
-  { id: 'C', name: 'Europäische Klassiker', teamCodes: ['GER', 'ENG', 'NED', 'DEN'] },
-  { id: 'D', name: 'Kontinentale Champions', teamCodes: ['FRA', 'ESP', 'ITA', 'SUI'] },
-  { id: 'E', name: 'Formstarke Herausforderer', teamCodes: ['BEL', 'CRO', 'MAR', 'TUR'] },
-  { id: 'F', name: 'AFC-Power', teamCodes: ['JPN', 'KOR', 'AUS', 'IRN'] },
-  { id: 'G', name: 'Afrikanische Energie', teamCodes: ['NGA', 'SEN', 'GHA', 'EGY'] },
-  { id: 'H', name: 'Südamerika & Europa Mix', teamCodes: ['URU', 'CHI', 'POL', 'SWE'] },
+  { id: 'A', name: 'Nordamerika-Start', teamCodes: ['USA', 'MEX', 'CAN', 'CRC'] },
+  { id: 'B', name: 'Südamerika & Freunde', teamCodes: ['ARG', 'PER', 'UKR', 'NZL'] },
+  { id: 'C', name: 'Samba & Samurai', teamCodes: ['BRA', 'COL', 'JPN', 'TUR'] },
+  { id: 'D', name: 'Europa trifft Asien/Afrika', teamCodes: ['FRA', 'SUI', 'MLI', 'QAT'] },
+  { id: 'E', name: 'Tradition & Überraschung', teamCodes: ['ENG', 'SEN', 'AUS', 'HON'] },
+  { id: 'F', name: 'Ballbesitz & Power', teamCodes: ['ESP', 'NGA', 'KSA', 'SRB'] },
+  { id: 'G', name: 'Kontinentale Mischung', teamCodes: ['GER', 'MAR', 'ECU', 'JAM'] },
+  { id: 'H', name: 'Atlantik-Linie', teamCodes: ['POR', 'TUN', 'KOR', 'PAN'] },
+  { id: 'I', name: 'Taktik & Temperament', teamCodes: ['NED', 'ALG', 'IRN', 'PAR'] },
+  { id: 'J', name: 'Umbruch & Außenseiter', teamCodes: ['BEL', 'EGY', 'UZB', 'GHA'] },
+  { id: 'K', name: 'Rekorde & Revivals', teamCodes: ['ITA', 'URU', 'CMR', 'IRQ'] },
+  { id: 'L', name: 'Routine & Dynamik', teamCodes: ['CRO', 'SWE', 'CIV', 'CHI'] },
 ];
 
 const createMatch = (id, groupId, teamACode, teamBCode, kickoff, venue) => ({
@@ -80,26 +136,28 @@ const createMatch = (id, groupId, teamACode, teamBCode, kickoff, venue) => ({
   scoreB: null,
 });
 
-let matches = [
-  createMatch(1, 'A', 'USA', 'POR', baseKickoff(0, 19), 'MetLife Stadium, New York'),
-  createMatch(2, 'A', 'MEX', 'CAN', baseKickoff(1, 16), 'Estadio Azteca, Mexiko-Stadt'),
-  createMatch(3, 'B', 'BRA', 'ECU', baseKickoff(1, 19), 'Levi’s Stadium, Santa Clara'),
-  createMatch(4, 'B', 'ARG', 'COL', baseKickoff(1, 21), 'SoFi Stadium, Los Angeles'),
-  createMatch(5, 'C', 'GER', 'DEN', baseKickoff(2, 15), 'BC Place, Vancouver'),
-  createMatch(6, 'C', 'ENG', 'NED', baseKickoff(2, 19), 'AT&T Stadium, Arlington'),
-  createMatch(7, 'D', 'FRA', 'SUI', baseKickoff(3, 16), 'NRG Stadium, Houston'),
-  createMatch(8, 'D', 'ESP', 'ITA', baseKickoff(3, 19), 'Mercedes-Benz Stadium, Atlanta'),
-  createMatch(9, 'E', 'BEL', 'TUR', baseKickoff(4, 15), 'Hard Rock Stadium, Miami'),
-  createMatch(10, 'E', 'CRO', 'MAR', baseKickoff(4, 19), 'Soldier Field, Chicago'),
-  createMatch(11, 'F', 'JPN', 'IRN', baseKickoff(5, 14), 'BMO Field, Toronto'),
-  createMatch(12, 'F', 'KOR', 'AUS', baseKickoff(5, 17), 'Lumen Field, Seattle'),
-  createMatch(13, 'G', 'NGA', 'EGY', baseKickoff(6, 15), 'Arrowhead Stadium, Kansas City'),
-  createMatch(14, 'G', 'SEN', 'GHA', baseKickoff(6, 19), 'Lincoln Financial Field, Philadelphia'),
-  createMatch(15, 'H', 'URU', 'POL', baseKickoff(7, 15), 'Copa America Stadium, Phoenix'),
-  createMatch(16, 'H', 'SWE', 'CHI', baseKickoff(7, 19), 'Gillette Stadium, Boston'),
+let matchId = 1;
+let matches = [];
 
+const scheduleGroup = (group, startDay = 0) => {
+  const [t1, t2, t3, t4] = group.teamCodes;
+  const slots = [
+    [t1, t2, startDay, 18],
+    [t3, t4, startDay, 21],
+    [t1, t3, startDay + 3, 18],
+    [t2, t4, startDay + 3, 21],
+    [t1, t4, startDay + 6, 18],
+    [t2, t3, startDay + 6, 21],
+  ];
 
-];
+  slots.forEach(([home, away, offset, hour]) => {
+    matches.push(createMatch(matchId++, group.id, home, away, baseKickoff(offset, hour), nextVenue()));
+  });
+};
+
+groups.forEach((group, index) => {
+  scheduleGroup(group, index * 2);
+});
 
 let tips = [];
 let nextTipId = 1;
@@ -108,7 +166,7 @@ let nextChampionTipId = 1;
 const championCutoff = new Date('2026-06-12T00:00:00Z');
 let championWinnerCode = null; // set to the actual winner when known
 const championPoints = 10;
-const dataVersion = 'wm-2026-v1';
+const dataVersion = 'wm-2026-v2';
 
 const matchOutcome = (scoreA, scoreB) => {
   if (scoreA === scoreB) return 'draw';
@@ -132,12 +190,14 @@ const calculatePoints = (tip, match) => {
   return { points: tendency ? 1 : 0, exact: false, tendency };
 };
 
-const recalculatePoints = (matchId) => {
-  const match = matches.find((g) => g.id === matchId);
+
+const recalculatePoints = (matchIdParam) => {
+  const match = matches.find((g) => g.id === matchIdParam);
   if (!match) return;
 
   tips
-    .filter((tip) => tip.matchId === matchId)
+    .filter((tip) => tip.matchId === matchIdParam)
+
     .forEach((tip) => {
       const { points, exact, tendency } = calculatePoints(tip, match);
       tip.points = points;
@@ -269,7 +329,7 @@ app.get('/api/games', (req, res) => {
 });
 
 app.get('/api/groups', (req, res) => {
-
+<
   const result = groups.map(mapGroup);
   res.json(result);
 });
@@ -340,8 +400,9 @@ app.post('/api/tips', (req, res) => {
 
   const newTip = {
     id: nextTipId++,
-    userName,
     matchId: match.id,
+    userName,
+
     tipA: numericTipA,
     tipB: numericTipB,
     points,
@@ -354,10 +415,12 @@ app.post('/api/tips', (req, res) => {
 });
 
 app.post('/api/games/:id/result', (req, res) => {
-  const matchId = Number(req.params.id);
+
+  const matchIdParam = Number(req.params.id);
   const { scoreA, scoreB } = req.body;
 
-  const match = matches.find((g) => g.id === matchId);
+  const match = matches.find((g) => g.id === matchIdParam);
+
   if (!match) {
     return res.status(404).json({ error: 'Game not found' });
   }
@@ -369,10 +432,9 @@ app.post('/api/games/:id/result', (req, res) => {
   match.scoreA = Number(scoreA);
   match.scoreB = Number(scoreB);
 
-  recalculatePoints(matchId);
+  recalculatePoints(matchIdParam);
 
   res.json(mapMatch(match));
-
 });
 
 app.post('/api/bonus/champion', (req, res) => {
@@ -456,7 +518,6 @@ app.get('/api/scoreboard', (req, res) => {
       entry.points += championPoints;
     }
   });
-
 
   const result = Object.values(scoreboard).sort((a, b) => b.points - a.points);
   res.json(result);

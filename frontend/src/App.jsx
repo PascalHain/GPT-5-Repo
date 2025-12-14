@@ -2,9 +2,8 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import GamesPage from './pages/GamesPage.jsx';
 import ScoreboardPage from './pages/ScoreboardPage.jsx';
 import GroupOverviewPage from './pages/GroupOverviewPage.jsx';
-
 import TeamPage from './pages/TeamPage.jsx';
-
+import KickbasePage from './pages/KickbasePage.jsx';
 
 const NavLink = ({ to, children }) => {
   const location = useLocation();
@@ -29,6 +28,7 @@ function App() {
             <NavLink to="/groups">Gruppen</NavLink>
             <NavLink to="/games">Spiele & Tipps</NavLink>
             <NavLink to="/scoreboard">Rangliste</NavLink>
+            <NavLink to="/kickbase">Kickbase WM</NavLink>
           </nav>
         </div>
       </header>
@@ -37,9 +37,8 @@ function App() {
           <Route path="/groups" element={<GroupOverviewPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/scoreboard" element={<ScoreboardPage />} />
-
+          <Route path="/kickbase" element={<KickbasePage />} />
           <Route path="/teams/:code" element={<TeamPage />} />
-
           <Route path="*" element={<Navigate to="/groups" replace />} />
         </Routes>
       </main>

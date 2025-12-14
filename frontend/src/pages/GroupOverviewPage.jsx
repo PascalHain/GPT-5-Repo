@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-
 import { Link } from 'react-router-dom';
-
 
 const API_BASE = 'http://localhost:4000';
 
@@ -52,7 +50,6 @@ function GroupOverviewPage() {
               <div>
                 <p className="eyebrow">{group.id}</p>
                 <h3 className="card-title">{group.name}</h3>
-
                 <p className="muted">
                   {group.teams.map((team) => (
                     <Link key={team.code} to={`/teams/${team.code}`} className="inline-flag">
@@ -60,7 +57,6 @@ function GroupOverviewPage() {
                     </Link>
                   ))}
                 </p>
-
               </div>
             </header>
 
@@ -84,7 +80,6 @@ function GroupOverviewPage() {
                   </thead>
                   <tbody>
                     {group.standings.map((row) => (
-
                       <tr key={row.teamCode}>
                         <td>{row.rank}</td>
                         <td>
@@ -92,7 +87,6 @@ function GroupOverviewPage() {
                             <span className="flag">{row.flag}</span> {row.team}
                           </Link>
                         </td>
-
                         <td>{row.played}</td>
                         <td>{row.wins}</td>
                         <td>{row.draws}</td>
@@ -116,7 +110,6 @@ function GroupOverviewPage() {
                     <div>
                       <p className="muted small">{game.venue}</p>
                       <p className="fixture-title">
-
                         <Link to={`/teams/${game.teamACode}`} className="inline-flag">
                           <span className="flag">{game.teamAFlag}</span> {game.teamA}
                         </Link>{' '}
@@ -124,7 +117,6 @@ function GroupOverviewPage() {
                         <Link to={`/teams/${game.teamBCode}`} className="inline-flag">
                           <span className="flag">{game.teamBFlag}</span> {game.teamB}
                         </Link>
-
                       </p>
                       <p className="muted small">Anpfiff: {formatDate(game.kickoff)}</p>
                     </div>

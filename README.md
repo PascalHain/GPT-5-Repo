@@ -6,10 +6,9 @@ Eine einfache Fullstack-Web-App zum Tippen von Spielergebnissen ähnlich Kicktip
 - Spiele verwalten (in-memory) und Ergebnisse eintragen.
 - Nutzer können Tipps abgeben und vor Anpfiff aktualisieren.
 - Rangliste zeigt Punkte, exakte Treffer und richtige Tendenzen.
-
-- Gruppenübersicht mit Tabelle und Fixture-Liste für die WM 2026 (Gruppen A–H).
+- Gruppenübersicht mit Tabelle und Fixture-Liste für die WM 2026 (Gruppen A–L, 48 Teams).
 - Bonus-Tipp auf den Weltmeister mit Flaggen-Auswahl und Sperrfrist.
-
+- Kickbase-inspirierte Aufstellungsseite mit Top-10-Nationen und schnellem Local-Save.
 
 ## Ordnerstruktur
 ```
@@ -37,8 +36,7 @@ README.md
 ## Backend
 - Node.js + Express, läuft auf Port **4000**.
 
-- In-Memory-Daten (keine Datenbank) mit WM-2026-Gruppen (A–H), Flaggen und Storylines für 32 Teams.
-
+- In-Memory-Daten (keine Datenbank) mit WM-2026-Gruppen (A–L), Flaggen und Storylines für 48 Teams inkl. aller Gastgeber.
 
 - CORS und JSON-Parsing aktiviert.
 
@@ -61,6 +59,7 @@ npm start     # Normaler Start
 - `POST /api/tips` → Tipp speichern oder aktualisieren. Body: `{ userName, matchId, tipA, tipB }`. Gesperrt nach Anpfiff.
 - `POST /api/games/:id/result` → Spielergebnis setzen. Body: `{ scoreA, scoreB }`.
 - `GET /api/tips/:userName` → Alle Tipps eines Nutzers.
+
 
 - `GET /api/teams` → Liste aller Teams mit Flaggen, Confed, Ranking und Gruppenzugehörigkeit.
 - `GET /api/teams/:code` → Team-Detail mit Fixtures.
@@ -89,6 +88,8 @@ npm run preview
 - `/games` → Spiele-Liste nach Gruppe, Eingabe und Laden von Tipps pro Spiel sowie Champion-Bonus-Tipp.
 - `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps, Tendenzen und Champion-Bonus.
 - `/teams/:code` → Team-Detail (Flagge, Kurzinfos, anstehende Spiele).
+
+- `/kickbase` → Fantasy-Aufstellung aus den zehn Top-Nationen der WM 2026 inkl. Flaggen.
 
 
 ## So startest du das komplette Projekt

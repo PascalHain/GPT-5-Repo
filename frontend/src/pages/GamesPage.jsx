@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-
 import { Link } from 'react-router-dom';
-
 
 const API_BASE = 'http://localhost:4000';
 
@@ -9,18 +7,15 @@ const formatDateTime = (value) => new Date(value).toLocaleString();
 
 function GamesPage() {
   const [matches, setMatches] = useState([]);
-
   const [teams, setTeams] = useState([]);
-
   const [userName, setUserName] = useState('');
   const [tipInputs, setTipInputs] = useState({});
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [championPick, setChampionPick] = useState('');
   const [championStatus, setChampionStatus] = useState('');
   const [championLocked, setChampionLocked] = useState(false);
-
+  const [tipSaveState, setTipSaveState] = useState({});
 
   const fetchMatches = async () => {
     try {
@@ -35,7 +30,6 @@ function GamesPage() {
       setLoading(false);
     }
   };
-
 
   const fetchTeams = async () => {
     try {
@@ -68,7 +62,6 @@ function GamesPage() {
     }
   };
 
-
   const fetchUserTips = async () => {
     if (!userName) {
       setStatus('Bitte zuerst deinen Nutzernamen eintragen, um Tipps zu laden.');
@@ -83,9 +76,7 @@ function GamesPage() {
       }, {});
       setTipInputs((prev) => ({ ...prev, ...mapped }));
       setStatus(tips.length ? 'Vorhandene Tipps geladen.' : 'Keine Tipps gefunden, lege los!');
-
       loadChampionPick();
-
     } catch (error) {
       setStatus('Tipps konnten nicht geladen werden.');
     }
@@ -93,7 +84,6 @@ function GamesPage() {
 
   useEffect(() => {
     fetchMatches();
-
     fetchTeams();
   }, []);
 
@@ -123,7 +113,6 @@ function GamesPage() {
     }
   };
 
-
   const handleTipChange = (matchId, field, value) => {
     setTipInputs((prev) => ({
       ...prev,
@@ -147,6 +136,7 @@ function GamesPage() {
     }
 
     try {
+      setTipSaveState((prev) => ({ ...prev, [match.id]: { state: 'saving' } }));
       const res = await fetch(`${API_BASE}/api/tips`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,13 +151,17 @@ function GamesPage() {
       if (!res.ok) {
         const errorData = await res.json();
         setStatus(errorData.error || 'Fehler beim Senden des Tipps.');
+        setTipSaveState((prev) => ({ ...prev, [match.id]: { state: 'error' } }));
         return;
       }
 
+      const time = new Date().toLocaleTimeString();
       setStatus('Tipp gespeichert!');
+      setTipSaveState((prev) => ({ ...prev, [match.id]: { state: 'saved', time } }));
       fetchMatches();
     } catch (error) {
       setStatus('Fehler beim Senden des Tipps.');
+      setTipSaveState((prev) => ({ ...prev, [match.id]: { state: 'error' } }));
     }
   };
 
@@ -178,7 +172,6 @@ function GamesPage() {
       return acc;
     }, {});
   }, [matches]);
-
 
   const sortedTeams = useMemo(
     () => [...teams].sort((a, b) => a.name.localeCompare(b.name)),
@@ -214,7 +207,6 @@ function GamesPage() {
           Meine Tipps laden
         </button>
       </div>
-
 
       <section className="card">
         <header className="card-header">
@@ -253,7 +245,6 @@ function GamesPage() {
         </div>
       </section>
 
-
       {Object.keys(matchesByGroup)
         .sort()
         .map((groupKey) => (
@@ -281,10 +272,10 @@ function GamesPage() {
                   {matchesByGroup[groupKey].map((match) => {
                     const values = tipInputs[match.id] || {};
                     const locked = match.isLocked;
+                    const saveState = tipSaveState[match.id];
                     return (
                       <tr key={match.id}>
                         <td>
-
                           <Link to={`/teams/${match.teamACode}`} className="inline-flag">
                             <span className="flag">{match.teamAFlag}</span> <strong>{match.teamA}</strong>
                           </Link>{' '}
@@ -292,7 +283,6 @@ function GamesPage() {
                           <Link to={`/teams/${match.teamBCode}`} className="inline-flag">
                             <span className="flag">{match.teamBFlag}</span> <strong>{match.teamB}</strong>
                           </Link>
-
                           <div className="muted small">
                             Ergebnis: {match.scoreA ?? '-'} : {match.scoreB ?? '-'}
                           </div>
@@ -320,11 +310,17 @@ function GamesPage() {
                         <td>
                           <div className={locked ? 'status-chip locked' : 'status-chip'}>
                             <button className="button" disabled={locked} onClick={() => handleSubmit(match)}>
-                              {locked ? 'Gesperrt' : 'Tipp speichern'}
+                              {locked ? 'Gesperrt' : saveState?.state === 'saving' ? 'Speichert...' : 'Tipp speichern'}
                             </button>
                             <p className="muted small" style={{ marginTop: '6px' }}>
                               {locked ? 'Kickoff erreicht' : 'bis Anpfiff offen'}
                             </p>
+                            {saveState?.state === 'saved' && (
+                              <span className="save-indicator saved">Gespeichert um {saveState.time}</span>
+                            )}
+                            {saveState?.state === 'error' && (
+                              <span className="save-indicator error">Fehler – erneut versuchen</span>
+                            )}
                           </div>
                         </td>
                       </tr>
