@@ -4,8 +4,11 @@ Eine einfache Fullstack-Web-App zum Tippen von Spielergebnissen ähnlich Kicktip
 
 ## Projektidee
 - Spiele verwalten (in-memory) und Ergebnisse eintragen.
-- Nutzer können Tipps abgeben.
-- Rangliste zeigt Punkte basierend auf eingereichten Tipps und Ergebnissen.
+- Nutzer können Tipps abgeben und vor Anpfiff aktualisieren.
+- Rangliste zeigt Punkte, exakte Treffer und richtige Tendenzen.
+- Gruppenübersicht mit Tabelle und Fixture-Liste für die WM 2026 (Gruppen A–L, 48 Teams).
+- Bonus-Tipp auf den Weltmeister mit Flaggen-Auswahl und Sperrfrist.
+- Kickbase-inspirierte Aufstellungsseite mit Top-10-Nationen und schnellem Local-Save.
 
 ## Ordnerstruktur
 ```
@@ -19,6 +22,7 @@ frontend/
     App.jsx
     pages/
       GamesPage.jsx
+      GroupOverviewPage.jsx
       ScoreboardPage.jsx
   package.json
 README.md
@@ -31,7 +35,7 @@ README.md
 
 ## Backend
 - Node.js + Express, läuft auf Port **4000**.
-- In-Memory-Daten (keine Datenbank).
+- In-Memory-Daten (keine Datenbank) mit WM-2026-Gruppen (A–L), Flaggen und Storylines für 48 Teams inkl. aller Gastgeber.
 - CORS und JSON-Parsing aktiviert.
 
 ### Starten
@@ -45,10 +49,17 @@ npm start     # Normaler Start
 
 ### API-Endpunkte
 - `GET /api/health` → einfacher Health-Check.
-- `GET /api/games` → Liste aller Spiele.
-- `POST /api/tips` → Tipp speichern. Body: `{ userName, gameId, tipA, tipB }`.
+- `GET /api/version` → gibt die aktuelle Datenversion für das Turnier zurück.
+- `GET /api/matches` (Alias: `/api/games`) → Liste aller Spiele (inkl. Sperrstatus & Venue).
+- `GET /api/groups` → Gruppenübersicht inkl. Tabelle (berechnet aus Ergebnissen) und Fixtures.
+- `POST /api/tips` → Tipp speichern oder aktualisieren. Body: `{ userName, matchId, tipA, tipB }`. Gesperrt nach Anpfiff.
 - `POST /api/games/:id/result` → Spielergebnis setzen. Body: `{ scoreA, scoreB }`.
-- `GET /api/scoreboard` → Rangliste aller Nutzer.
+- `GET /api/tips/:userName` → Alle Tipps eines Nutzers.
+- `GET /api/teams` → Liste aller Teams mit Flaggen, Confed, Ranking und Gruppenzugehörigkeit.
+- `GET /api/teams/:code` → Team-Detail mit Fixtures.
+- `GET /api/scoreboard` → Rangliste aller Nutzer inkl. Exakt- und Tendenz-Zählern plus Champion-Bonus.
+- `POST /api/bonus/champion` → Weltmeister-Tipp speichern. Body: `{ userName, teamCode }`. Gesperrt ab Turnierstart.
+- `GET /api/bonus/champion/:userName` → Eigenen Champion-Tipp laden.
 
 ## Frontend
 - React + Vite + React Router.
@@ -65,10 +76,13 @@ npm run preview
 ```
 
 ### Seiten
-- `/games` → Spiele-Liste, Eingabe von Tipps je Spiel.
-- `/scoreboard` → Rangliste mit Gesamtpunkten.
+- `/groups` → WM-Gruppen mit Tabelle, Flaggen und Spielplan.
+- `/games` → Spiele-Liste nach Gruppe, Eingabe und Laden von Tipps pro Spiel sowie Champion-Bonus-Tipp.
+- `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps, Tendenzen und Champion-Bonus.
+- `/teams/:code` → Team-Detail (Flagge, Kurzinfos, anstehende Spiele).
+- `/kickbase` → Fantasy-Aufstellung aus den zehn Top-Nationen der WM 2026 inkl. Flaggen.
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend`). Server läuft auf **http://localhost:4000**.
 2. Frontend starten (`npm run dev` im Ordner `frontend`). Frontend läuft auf **http://localhost:5173**.
-3. Über `/games` Tipps abgeben, über `/scoreboard` Punkte einsehen.
+3. Über `/games` Tipps abgeben, über `/groups` Spielplan und Tabellen checken, über `/scoreboard` Punkte einsehen.
