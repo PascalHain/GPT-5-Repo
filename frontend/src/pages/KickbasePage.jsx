@@ -9,13 +9,15 @@ const kickbaseFavorites = [
   { code: 'FRA', name: 'Frankreich', flag: '🇫🇷', ranking: 2 },
   { code: 'BRA', name: 'Brasilien', flag: '🇧🇷', ranking: 3 },
   { code: 'ENG', name: 'England', flag: '🏴', ranking: 4 },
-  { code: 'BEL', name: 'Belgien', flag: '🇧🇪', ranking: 5 },
-  { code: 'CRO', name: 'Kroatien', flag: '🇭🇷', ranking: 6 },
   { code: 'ESP', name: 'Spanien', flag: '🇪🇸', ranking: 7 },
-  { code: 'NED', name: 'Niederlande', flag: '🇳🇱', ranking: 8 },
   { code: 'POR', name: 'Portugal', flag: '🇵🇹', ranking: 9 },
+  { code: 'GER', name: 'Deutschland', flag: '🇩🇪', ranking: 12 },
+  { code: 'BEL', name: 'Belgien', flag: '🇧🇪', ranking: 5 },
+  { code: 'NED', name: 'Niederlande', flag: '🇳🇱', ranking: 8 },
   { code: 'MAR', name: 'Marokko', flag: '🇲🇦', ranking: 10 },
 ];
+
+const preferredCodes = ['ARG', 'FRA', 'BRA', 'ENG', 'ESP', 'POR', 'GER', 'NED', 'BEL', 'MAR'];
 
 const baseSlots = [
   { id: 'gk', label: 'Torwart', lane: 'keeper', top: 82, left: 50 },
@@ -162,6 +164,19 @@ const bestXIByTeam = {
     st: 'Youssef En-Nesyri',
     rw: 'Abdelhamid Sabiri',
   },
+  GER: {
+    gk: 'Manuel Neuer',
+    lb: 'David Raum',
+    cb1: 'Antonio Rüdiger',
+    cb2: 'Jonathan Tah',
+    rb: 'Joshua Kimmich',
+    dm: 'Robert Andrich',
+    cm: 'Ilkay Gündogan',
+    am: 'Jamal Musiala',
+    lw: 'Leroy Sané',
+    st: 'Niclas Füllkrug',
+    rw: 'Florian Wirtz',
+  },
 };
 
 function KickbasePage() {
@@ -204,7 +219,22 @@ function KickbasePage() {
   }, []);
 
   const topTeams = useMemo(() => {
-    return [...teams].sort((a, b) => a.ranking - b.ranking).slice(0, 10);
+    if (teams.length === 0) {
+      return preferredCodes
+        .map((code) => kickbaseFavorites.find((team) => team.code === code))
+        .filter(Boolean);
+    }
+
+    const byCode = new Map(teams.map((team) => [team.code, team]));
+    const preferred = preferredCodes
+      .map((code) => byCode.get(code) || kickbaseFavorites.find((team) => team.code === code))
+      .filter(Boolean);
+
+    const remaining = teams
+      .filter((team) => !preferredCodes.includes(team.code))
+      .sort((a, b) => a.ranking - b.ranking);
+
+    return [...preferred, ...remaining].slice(0, 10);
   }, [teams]);
 
   useEffect(() => {
@@ -273,13 +303,37 @@ function KickbasePage() {
           <p className="eyebrow">Kickbase WM</p>
           <h2 className="section-title">Deine Fantasy-Aufstellung</h2>
           <p className="muted">
-            Wähle Spieler aus den 10 Top-Favoriten-Nationalteams (nach FIFA-Ranking) und stelle deine Startelf. Alles lokal
-            gespeichert – perfekt zum Durchspielen vor dem Turnierstart.
+            Wähle Spieler aus zehn Top-Nationen (Deutschland ist fix dabei) und stelle deine Startelf. Alles lokal gespeichert –
+            perfekt zum Durchspielen vor dem Turnierstart.
           </p>
         </div>
         <button className="button ghost" onClick={fetchTeams}>
           Teams neu laden
         </button>
+      </div>
+
+      <div className="stepper">
+        <div className="step">
+          <span className="pill tiny">1</span>
+          <div>
+            <p className="muted very-small">Vorlage wählen</p>
+            <p className="step-title">Top-Team anklicken</p>
+          </div>
+        </div>
+        <div className="step">
+          <span className="pill tiny">2</span>
+          <div>
+            <p className="muted very-small">Positionen editieren</p>
+            <p className="step-title">Namen & Team setzen</p>
+          </div>
+        </div>
+        <div className="step">
+          <span className="pill tiny">3</span>
+          <div>
+            <p className="muted very-small">Speichern</p>
+            <p className="step-title">Pitch sichern & erneut laden</p>
+          </div>
+        </div>
       </div>
 
       <section className="card">
@@ -288,8 +342,8 @@ function KickbasePage() {
             <p className="eyebrow">Auswahl</p>
             <h3 className="card-title">Top 10 Nationen für Kickbase</h3>
             <p className="muted small">
-              Basierend auf dem hinterlegten WM-2026-Ranking, inkl. Flaggen, Gruppen und Mini-Storylines. Startelf-Buttons
-              laden direkt eine Kickbase-taugliche 4-3-3.
+              Basierend auf dem hinterlegten WM-2026-Ranking (zzgl. Deutschland als Pflichtpick), inkl. Flaggen, Gruppen und
+              Mini-Storylines. Startelf-Buttons laden direkt eine Kickbase-taugliche 4-3-3.
             </p>
           </div>
         </header>
@@ -324,6 +378,19 @@ function KickbasePage() {
         </div>
       </section>
 
+      <div className="template-rail">
+        {topTeams.map((team) => (
+          <button
+            key={team.code}
+            className={`rail-chip ${activeTemplate === team.code ? 'active' : ''}`}
+            onClick={() => applyTemplate(team.code)}
+          >
+            <span className="flag">{team.flag}</span>
+            <span className="rail-name">{team.name}</span>
+          </button>
+        ))}
+      </div>
+
       <section className="card">
         <header className="card-header lineup-head">
           <div>
@@ -347,6 +414,9 @@ function KickbasePage() {
           <div className="pitch-panel">
             <div className="pitch">
               <div className="pitch-lines" aria-hidden />
+              <div className="pitch-legend">
+                <p className="muted tiny">4-3-3 mit klaren Lanes – klicke rechts für Anpassung.</p>
+              </div>
               {lineup.map((slot) => {
                 const team = topTeams.find((t) => t.code === slot.teamCode);
                 return (
@@ -394,12 +464,12 @@ function KickbasePage() {
                     <p className="muted very-small">{topTeams.find((t) => t.code === slot.teamCode)?.storyline || ''}</p>
                   )}
                 </div>
-              ))}
-            </div>
+                  ))}
+                </div>
 
-            <div className="usage-list">
-              <p className="muted small">Team-Kontingent</p>
-              {Object.keys(teamUsage).length === 0 && <p className="muted very-small">Noch keine Auswahl.</p>}
+                <div className="usage-list">
+                  <p className="muted small">Team-Kontingent</p>
+                  {Object.keys(teamUsage).length === 0 && <p className="muted very-small">Noch keine Auswahl.</p>}
               {Object.entries(teamUsage)
                 .sort(([, a], [, b]) => b - a)
                 .map(([code, count]) => {

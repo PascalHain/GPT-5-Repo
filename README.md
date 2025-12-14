@@ -8,7 +8,7 @@ Eine einfache Fullstack-Web-App zum Tippen von Spielergebnissen ähnlich Kicktip
 - Rangliste zeigt Punkte, exakte Treffer und richtige Tendenzen.
 - Gruppenübersicht mit Tabelle und Fixture-Liste für die WM 2026 (Gruppen A–L, 48 Teams).
 - Bonus-Tipp auf den Weltmeister mit Flaggen-Auswahl und Sperrfrist.
-- Kickbase-inspirierte Aufstellungsseite mit Top-10-Nationen und schnellem Local-Save.
+- Kickbase-inspirierte Aufstellungsseite mit zehn Top-Nationen (inkl. Deutschland) und schnellem Local-Save.
 
 ## Ordnerstruktur
 ```
@@ -80,7 +80,7 @@ npm run preview
 - `/games` → Spiele-Liste nach Gruppe, Eingabe und Laden von Tipps pro Spiel sowie Champion-Bonus-Tipp.
 - `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps, Tendenzen und Champion-Bonus.
 - `/teams/:code` → Team-Detail (Flagge, Kurzinfos, anstehende Spiele).
-- `/kickbase` → Fantasy-Aufstellung aus den zehn Top-Nationen der WM 2026 inkl. Flaggen.
+- `/kickbase` → Fantasy-Aufstellung aus zehn Top-Nationen (Deutschland immer dabei) inklusive Flaggen, Vorlagen und Spielfeld.
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend`). Server läuft auf **http://localhost:4000**.
