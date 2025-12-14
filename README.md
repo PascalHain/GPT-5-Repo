@@ -6,6 +6,7 @@ Eine einfache Fullstack-Web-App zum Tippen von Spielergebnissen ähnlich Kicktip
 - Spiele verwalten (in-memory) und Ergebnisse eintragen.
 - Nutzer können Tipps abgeben.
 - Rangliste zeigt Punkte basierend auf eingereichten Tipps und Ergebnissen.
+- Turnier-Übersicht mit Gruppen, Stadien und Spielplan.
 
 ## Ordnerstruktur
 ```
@@ -80,6 +81,17 @@ npm run dev:frontend
 - `/tournament` → WM-Gruppen, Stadien und Spielplan pro Gruppe.
 - `/games` → Spiele-Liste, Eingabe von Tipps je Spiel.
 - `/scoreboard` → Rangliste mit Gesamtpunkten.
+
+## Konfliktfreien Stand holen / neuen Branch starten
+Falls beim Mergen Konflikte auftreten, kannst du einfach einen frischen Branch auf Basis dieses Stands anlegen:
+```bash
+git checkout work
+# optional: lokalen Stand zurücksetzen, falls nötig
+# git reset --hard
+# neuen Branch anlegen
+git checkout -b clean-worldcup
+```
+Danach wie oben beschrieben Backend und Frontend installieren/starten. So erhältst du einen konfliktfreien Zustand, ohne bestehende lokale Änderungen mergen zu müssen.
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend` **oder** `npm run dev:backend` im Projekt-Root). Server läuft auf **http://localhost:4000**.

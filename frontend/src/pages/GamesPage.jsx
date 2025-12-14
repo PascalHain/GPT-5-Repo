@@ -68,16 +68,21 @@ function GamesPage() {
   return (
     <div>
       <h1 className="section-title">Spiele</h1>
-      <p>Trage deinen Nutzernamen ein und tippe die Ergebnisse.</p>
-      <div className="form-row">
-        <label htmlFor="username">Nutzername:</label>
-        <input
-          id="username"
-          className="input"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          placeholder="z. B. Alex"
-        />
+      <p>Trage deinen Nutzernamen ein und tippe die Ergebnisse. Über den Button kannst du Spiele neu laden.</p>
+      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <div className="form-row" style={{ marginBottom: 0 }}>
+          <label htmlFor="username">Nutzername:</label>
+          <input
+            id="username"
+            className="input"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            placeholder="z. B. Alex"
+          />
+        </div>
+        <button className="button" type="button" onClick={fetchGames}>
+          Spiele aktualisieren
+        </button>
       </div>
 
       <table className="table">
@@ -85,6 +90,8 @@ function GamesPage() {
           <tr>
             <th>Match</th>
             <th>Datum</th>
+            <th>Gruppe</th>
+            <th>Stadion</th>
             <th>Tipp Team A</th>
             <th>Tipp Team B</th>
             <th>Aktion</th>
@@ -102,6 +109,8 @@ function GamesPage() {
                   </div>
                 </td>
                 <td>{new Date(game.date).toLocaleString()}</td>
+                <td>{game.group || '-'}</td>
+                <td>{game.stadium || '-'}</td>
                 <td>
                   <input
                     className="input"
