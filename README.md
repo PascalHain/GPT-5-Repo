@@ -48,6 +48,7 @@ npm start     # Normaler Start
 
 ### API-Endpunkte
 - `GET /api/health` → einfacher Health-Check.
+- `GET /api/version` → gibt die aktuelle Datenversion für das Turnier zurück.
 - `GET /api/matches` (Alias: `/api/games`) → Liste aller Spiele (inkl. Sperrstatus & Venue).
 - `GET /api/groups` → Gruppenübersicht inkl. Tabelle (berechnet aus Ergebnissen) und Fixtures.
 - `POST /api/tips` → Tipp speichern oder aktualisieren. Body: `{ userName, matchId, tipA, tipB }`. Gesperrt nach Anpfiff.

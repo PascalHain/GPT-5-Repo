@@ -105,6 +105,7 @@ let nextChampionTipId = 1;
 const championCutoff = new Date('2026-06-12T00:00:00Z');
 let championWinnerCode = null; // set to the actual winner when known
 const championPoints = 10;
+const dataVersion = 'wm-2026-v1';
 
 const matchOutcome = (scoreA, scoreB) => {
   if (scoreA === scoreB) return 'draw';
@@ -243,6 +244,10 @@ const championState = () => ({
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.get('/api/version', (req, res) => {
+  res.json({ version: dataVersion });
 });
 
 app.get('/api/matches', (req, res) => {
