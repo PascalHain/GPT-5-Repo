@@ -7,7 +7,9 @@ const PORT = 4000;
 app.use(cors());
 app.use(express.json());
 
+
 const baseKickoff = (offsetDays, hour = 18) => {
+
   const kickoff = new Date(Date.UTC(2026, 5, 12, hour, 0, 0));
   kickoff.setUTCDate(kickoff.getUTCDate() + offsetDays);
   return kickoff.toISOString();
@@ -34,6 +36,7 @@ const venues = [
   'Soldier Field (Chicago)',
   'State Farm Stadium (Phoenix)',
   'Estadio Olímpico Universitario (Mexiko-Stadt)',
+
 ];
 
 let venueIndex = 0;
@@ -187,12 +190,14 @@ const calculatePoints = (tip, match) => {
   return { points: tendency ? 1 : 0, exact: false, tendency };
 };
 
+
 const recalculatePoints = (matchIdParam) => {
   const match = matches.find((g) => g.id === matchIdParam);
   if (!match) return;
 
   tips
     .filter((tip) => tip.matchId === matchIdParam)
+
     .forEach((tip) => {
       const { points, exact, tendency } = calculatePoints(tip, match);
       tip.points = points;
@@ -205,6 +210,7 @@ const isLocked = (match) => new Date(match.kickoff) <= new Date();
 
 const buildStandings = (group) => {
   const groupMatches = matches.filter((m) => m.groupId === group.id);
+
   const table = group.teamCodes.map((code) => {
     const team = teamMap.get(code);
     return {
@@ -227,8 +233,10 @@ const buildStandings = (group) => {
   groupMatches.forEach((match) => {
     if (match.scoreA === null || match.scoreB === null) return;
 
+
     const rowA = rowFor(match.teamACode);
     const rowB = rowFor(match.teamBCode);
+
     if (!rowA || !rowB) return;
 
     rowA.played += 1;
@@ -269,6 +277,7 @@ const buildStandings = (group) => {
   return sorted.map((row, index) => ({ ...row, rank: index + 1 }));
 };
 
+
 const mapMatch = (match) => {
   const teamA = teamMap.get(match.teamACode);
   const teamB = teamMap.get(match.teamBCode);
@@ -300,12 +309,15 @@ const championState = () => ({
   winnerCode: championWinnerCode,
 });
 
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+
 app.get('/api/version', (req, res) => {
   res.json({ version: dataVersion });
+
 });
 
 app.get('/api/matches', (req, res) => {
@@ -317,6 +329,7 @@ app.get('/api/games', (req, res) => {
 });
 
 app.get('/api/groups', (req, res) => {
+<
   const result = groups.map(mapGroup);
   res.json(result);
 });
@@ -347,6 +360,7 @@ app.get('/api/teams/:code', (req, res) => {
     groupName: group?.name,
     fixtures,
   });
+
 });
 
 app.post('/api/tips', (req, res) => {
@@ -388,6 +402,7 @@ app.post('/api/tips', (req, res) => {
     id: nextTipId++,
     matchId: match.id,
     userName,
+
     tipA: numericTipA,
     tipB: numericTipB,
     points,
@@ -400,10 +415,12 @@ app.post('/api/tips', (req, res) => {
 });
 
 app.post('/api/games/:id/result', (req, res) => {
+
   const matchIdParam = Number(req.params.id);
   const { scoreA, scoreB } = req.body;
 
   const match = matches.find((g) => g.id === matchIdParam);
+
   if (!match) {
     return res.status(404).json({ error: 'Game not found' });
   }

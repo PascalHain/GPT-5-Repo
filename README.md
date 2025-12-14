@@ -35,7 +35,9 @@ README.md
 
 ## Backend
 - Node.js + Express, läuft auf Port **4000**.
+
 - In-Memory-Daten (keine Datenbank) mit WM-2026-Gruppen (A–L), Flaggen und Storylines für 48 Teams inkl. aller Gastgeber.
+
 - CORS und JSON-Parsing aktiviert.
 
 ### Starten
@@ -49,17 +51,22 @@ npm start     # Normaler Start
 
 ### API-Endpunkte
 - `GET /api/health` → einfacher Health-Check.
+
 - `GET /api/version` → gibt die aktuelle Datenversion für das Turnier zurück.
+
 - `GET /api/matches` (Alias: `/api/games`) → Liste aller Spiele (inkl. Sperrstatus & Venue).
 - `GET /api/groups` → Gruppenübersicht inkl. Tabelle (berechnet aus Ergebnissen) und Fixtures.
 - `POST /api/tips` → Tipp speichern oder aktualisieren. Body: `{ userName, matchId, tipA, tipB }`. Gesperrt nach Anpfiff.
 - `POST /api/games/:id/result` → Spielergebnis setzen. Body: `{ scoreA, scoreB }`.
 - `GET /api/tips/:userName` → Alle Tipps eines Nutzers.
+
+
 - `GET /api/teams` → Liste aller Teams mit Flaggen, Confed, Ranking und Gruppenzugehörigkeit.
 - `GET /api/teams/:code` → Team-Detail mit Fixtures.
 - `GET /api/scoreboard` → Rangliste aller Nutzer inkl. Exakt- und Tendenz-Zählern plus Champion-Bonus.
 - `POST /api/bonus/champion` → Weltmeister-Tipp speichern. Body: `{ userName, teamCode }`. Gesperrt ab Turnierstart.
 - `GET /api/bonus/champion/:userName` → Eigenen Champion-Tipp laden.
+
 
 ## Frontend
 - React + Vite + React Router.
@@ -76,11 +83,14 @@ npm run preview
 ```
 
 ### Seiten
+
 - `/groups` → WM-Gruppen mit Tabelle, Flaggen und Spielplan.
 - `/games` → Spiele-Liste nach Gruppe, Eingabe und Laden von Tipps pro Spiel sowie Champion-Bonus-Tipp.
 - `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps, Tendenzen und Champion-Bonus.
 - `/teams/:code` → Team-Detail (Flagge, Kurzinfos, anstehende Spiele).
+
 - `/kickbase` → Fantasy-Aufstellung aus den zehn Top-Nationen der WM 2026 inkl. Flaggen.
+
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend`). Server läuft auf **http://localhost:4000**.
