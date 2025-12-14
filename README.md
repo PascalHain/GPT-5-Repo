@@ -88,12 +88,13 @@ npm run dev:frontend
 - `/scoreboard` → Rangliste mit Gesamtpunkten.
 
 ## Konfliktfreien Stand holen / neuen Branch starten
-Falls beim Mergen Konflikte auftreten, kannst du einfach einen frischen Branch auf Basis dieses Stands anlegen, statt alte lokale Änderungen zu mergen:
+Falls beim Mergen Konflikte auftreten, hol dir einen sauberen Stand und leg einen neuen Branch an. Die ausführliche Schritt-für-Schritt-Anleitung findest du in `docs/conflict-recovery.md`.
+
+Kurzfassung (ohne lokale Änderungen):
 ```bash
+git fetch --all --prune
 git checkout work
-# optional: lokalen Stand zurücksetzen, falls nötig
-# git reset --hard
-# neuen Branch anlegen
+git reset --hard origin/work
 git checkout -b clean-worldcup
 ```
 Danach wie oben beschrieben Backend und Frontend installieren/starten. So erhältst du einen konfliktfreien Zustand ohne bestehende lokale Änderungen.
