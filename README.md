@@ -4,8 +4,9 @@ Eine einfache Fullstack-Web-App zum Tippen von Spielergebnissen ähnlich Kicktip
 
 ## Projektidee
 - Spiele verwalten (in-memory) und Ergebnisse eintragen.
-- Nutzer können Tipps abgeben.
-- Rangliste zeigt Punkte basierend auf eingereichten Tipps und Ergebnissen.
+- Nutzer können Tipps abgeben und vor Anpfiff aktualisieren.
+- Rangliste zeigt Punkte, exakte Treffer und richtige Tendenzen.
+- Gruppenübersicht mit Tabelle und Fixture-Liste für die WM-Vorrunde.
 
 ## Ordnerstruktur
 ```
@@ -19,6 +20,7 @@ frontend/
     App.jsx
     pages/
       GamesPage.jsx
+      GroupOverviewPage.jsx
       ScoreboardPage.jsx
   package.json
 README.md
@@ -31,7 +33,7 @@ README.md
 
 ## Backend
 - Node.js + Express, läuft auf Port **4000**.
-- In-Memory-Daten (keine Datenbank).
+- In-Memory-Daten (keine Datenbank) mit WM-Gruppen (A–C) und mehreren Vorrunden-Partien.
 - CORS und JSON-Parsing aktiviert.
 
 ### Starten
@@ -45,10 +47,12 @@ npm start     # Normaler Start
 
 ### API-Endpunkte
 - `GET /api/health` → einfacher Health-Check.
-- `GET /api/games` → Liste aller Spiele.
-- `POST /api/tips` → Tipp speichern. Body: `{ userName, gameId, tipA, tipB }`.
+- `GET /api/matches` (Alias: `/api/games`) → Liste aller Spiele (inkl. Sperrstatus & Venue).
+- `GET /api/groups` → Gruppenübersicht inkl. Tabelle (berechnet aus Ergebnissen) und Fixtures.
+- `POST /api/tips` → Tipp speichern oder aktualisieren. Body: `{ userName, matchId, tipA, tipB }`. Gesperrt nach Anpfiff.
 - `POST /api/games/:id/result` → Spielergebnis setzen. Body: `{ scoreA, scoreB }`.
-- `GET /api/scoreboard` → Rangliste aller Nutzer.
+- `GET /api/tips/:userName` → Alle Tipps eines Nutzers.
+- `GET /api/scoreboard` → Rangliste aller Nutzer inkl. Exakt- und Tendenz-Zählern.
 
 ## Frontend
 - React + Vite + React Router.
@@ -65,10 +69,11 @@ npm run preview
 ```
 
 ### Seiten
-- `/games` → Spiele-Liste, Eingabe von Tipps je Spiel.
-- `/scoreboard` → Rangliste mit Gesamtpunkten.
+- `/groups` → WM-Gruppen mit Tabelle und Spielplan.
+- `/games` → Spiele-Liste nach Gruppe, Eingabe und Laden von Tipps pro Spiel.
+- `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps und Tendenzen.
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend`). Server läuft auf **http://localhost:4000**.
 2. Frontend starten (`npm run dev` im Ordner `frontend`). Frontend läuft auf **http://localhost:5173**.
-3. Über `/games` Tipps abgeben, über `/scoreboard` Punkte einsehen.
+3. Über `/games` Tipps abgeben, über `/groups` Spielplan und Tabellen checken, über `/scoreboard` Punkte einsehen.
