@@ -88,7 +88,7 @@ npm run dev:frontend
 - `/scoreboard` → Rangliste mit Gesamtpunkten.
 
 ## Konfliktfreien Stand holen / neuen Branch starten
-Falls beim Mergen Konflikte auftreten, kannst du einfach einen frischen Branch auf Basis dieses Stands anlegen:
+Falls beim Mergen Konflikte auftreten, kannst du einfach einen frischen Branch auf Basis dieses Stands anlegen, statt alte lokale Änderungen zu mergen:
 ```bash
 git checkout work
 # optional: lokalen Stand zurücksetzen, falls nötig
@@ -96,7 +96,7 @@ git checkout work
 # neuen Branch anlegen
 git checkout -b clean-worldcup
 ```
-Danach wie oben beschrieben Backend und Frontend installieren/starten. So erhältst du einen konfliktfreien Zustand, ohne bestehende lokale Änderungen mergen zu müssen.
+Danach wie oben beschrieben Backend und Frontend installieren/starten. So erhältst du einen konfliktfreien Zustand ohne bestehende lokale Änderungen.
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend` **oder** `npm run dev:backend` im Projekt-Root). Server läuft auf **http://localhost:4000**.

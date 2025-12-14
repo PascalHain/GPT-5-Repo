@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.md text
+*.js text
+*.jsx text
+*.json text
+*.css text
+*.html text
+*.lock merge=union
