@@ -93,6 +93,7 @@ a:hover {
   color: #475569;
 }
 
+
 .flag {
   margin-right: 6px;
 }
@@ -102,6 +103,7 @@ a:hover {
   align-items: center;
   gap: 6px;
 }
+
 
 .small {
   font-size: 0.9rem;

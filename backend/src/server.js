@@ -7,6 +7,7 @@ const PORT = 4000;
 app.use(cors());
 app.use(express.json());
 
+
 const baseKickoff = (offsetDays, hour = 19) => {
   const kickoff = new Date(Date.UTC(2026, 5, 12, hour, 0, 0));
   kickoff.setUTCDate(kickoff.getUTCDate() + offsetDays);
@@ -96,6 +97,8 @@ let matches = [
   createMatch(14, 'G', 'SEN', 'GHA', baseKickoff(6, 19), 'Lincoln Financial Field, Philadelphia'),
   createMatch(15, 'H', 'URU', 'POL', baseKickoff(7, 15), 'Copa America Stadium, Phoenix'),
   createMatch(16, 'H', 'SWE', 'CHI', baseKickoff(7, 19), 'Gillette Stadium, Boston'),
+
+
 ];
 
 let tips = [];
@@ -147,6 +150,7 @@ const isLocked = (match) => new Date(match.kickoff) <= new Date();
 
 const buildStandings = (group) => {
   const groupMatches = matches.filter((m) => m.groupId === group.id);
+
   const table = group.teamCodes.map((code) => {
     const team = teamMap.get(code);
     return {
@@ -169,8 +173,10 @@ const buildStandings = (group) => {
   groupMatches.forEach((match) => {
     if (match.scoreA === null || match.scoreB === null) return;
 
+
     const rowA = rowFor(match.teamACode);
     const rowB = rowFor(match.teamBCode);
+
     if (!rowA || !rowB) return;
 
     rowA.played += 1;
@@ -211,6 +217,7 @@ const buildStandings = (group) => {
   return sorted.map((row, index) => ({ ...row, rank: index + 1 }));
 };
 
+
 const mapMatch = (match) => {
   const teamA = teamMap.get(match.teamACode);
   const teamB = teamMap.get(match.teamBCode);
@@ -242,12 +249,15 @@ const championState = () => ({
   winnerCode: championWinnerCode,
 });
 
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+
 app.get('/api/version', (req, res) => {
   res.json({ version: dataVersion });
+
 });
 
 app.get('/api/matches', (req, res) => {
@@ -259,6 +269,7 @@ app.get('/api/games', (req, res) => {
 });
 
 app.get('/api/groups', (req, res) => {
+
   const result = groups.map(mapGroup);
   res.json(result);
 });
@@ -289,6 +300,7 @@ app.get('/api/teams/:code', (req, res) => {
     groupName: group?.name,
     fixtures,
   });
+
 });
 
 app.post('/api/tips', (req, res) => {
@@ -360,6 +372,7 @@ app.post('/api/games/:id/result', (req, res) => {
   recalculatePoints(matchId);
 
   res.json(mapMatch(match));
+
 });
 
 app.post('/api/bonus/champion', (req, res) => {
@@ -443,6 +456,7 @@ app.get('/api/scoreboard', (req, res) => {
       entry.points += championPoints;
     }
   });
+
 
   const result = Object.values(scoreboard).sort((a, b) => b.points - a.points);
   res.json(result);

@@ -2,7 +2,9 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import GamesPage from './pages/GamesPage.jsx';
 import ScoreboardPage from './pages/ScoreboardPage.jsx';
 import GroupOverviewPage from './pages/GroupOverviewPage.jsx';
+
 import TeamPage from './pages/TeamPage.jsx';
+
 
 const NavLink = ({ to, children }) => {
   const location = useLocation();
@@ -35,7 +37,9 @@ function App() {
           <Route path="/groups" element={<GroupOverviewPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/scoreboard" element={<ScoreboardPage />} />
+
           <Route path="/teams/:code" element={<TeamPage />} />
+
           <Route path="*" element={<Navigate to="/groups" replace />} />
         </Routes>
       </main>

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+
 import { Link } from 'react-router-dom';
+
 
 const API_BASE = 'http://localhost:4000';
 
@@ -7,14 +9,18 @@ const formatDateTime = (value) => new Date(value).toLocaleString();
 
 function GamesPage() {
   const [matches, setMatches] = useState([]);
+
   const [teams, setTeams] = useState([]);
+
   const [userName, setUserName] = useState('');
   const [tipInputs, setTipInputs] = useState({});
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+
   const [championPick, setChampionPick] = useState('');
   const [championStatus, setChampionStatus] = useState('');
   const [championLocked, setChampionLocked] = useState(false);
+
 
   const fetchMatches = async () => {
     try {
@@ -29,6 +35,7 @@ function GamesPage() {
       setLoading(false);
     }
   };
+
 
   const fetchTeams = async () => {
     try {
@@ -61,6 +68,7 @@ function GamesPage() {
     }
   };
 
+
   const fetchUserTips = async () => {
     if (!userName) {
       setStatus('Bitte zuerst deinen Nutzernamen eintragen, um Tipps zu laden.');
@@ -75,7 +83,9 @@ function GamesPage() {
       }, {});
       setTipInputs((prev) => ({ ...prev, ...mapped }));
       setStatus(tips.length ? 'Vorhandene Tipps geladen.' : 'Keine Tipps gefunden, lege los!');
+
       loadChampionPick();
+
     } catch (error) {
       setStatus('Tipps konnten nicht geladen werden.');
     }
@@ -83,6 +93,7 @@ function GamesPage() {
 
   useEffect(() => {
     fetchMatches();
+
     fetchTeams();
   }, []);
 
@@ -111,6 +122,7 @@ function GamesPage() {
       setChampionStatus('Champion-Tipp fehlgeschlagen.');
     }
   };
+
 
   const handleTipChange = (matchId, field, value) => {
     setTipInputs((prev) => ({
@@ -167,6 +179,7 @@ function GamesPage() {
     }, {});
   }, [matches]);
 
+
   const sortedTeams = useMemo(
     () => [...teams].sort((a, b) => a.name.localeCompare(b.name)),
     [teams],
@@ -201,6 +214,7 @@ function GamesPage() {
           Meine Tipps laden
         </button>
       </div>
+
 
       <section className="card">
         <header className="card-header">
@@ -239,6 +253,7 @@ function GamesPage() {
         </div>
       </section>
 
+
       {Object.keys(matchesByGroup)
         .sort()
         .map((groupKey) => (
@@ -269,6 +284,7 @@ function GamesPage() {
                     return (
                       <tr key={match.id}>
                         <td>
+
                           <Link to={`/teams/${match.teamACode}`} className="inline-flag">
                             <span className="flag">{match.teamAFlag}</span> <strong>{match.teamA}</strong>
                           </Link>{' '}
@@ -276,6 +292,7 @@ function GamesPage() {
                           <Link to={`/teams/${match.teamBCode}`} className="inline-flag">
                             <span className="flag">{match.teamBFlag}</span> <strong>{match.teamB}</strong>
                           </Link>
+
                           <div className="muted small">
                             Ergebnis: {match.scoreA ?? '-'} : {match.scoreB ?? '-'}
                           </div>

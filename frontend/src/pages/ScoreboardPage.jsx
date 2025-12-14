@@ -27,7 +27,9 @@ function ScoreboardPage() {
         <div>
           <p className="eyebrow">Ranking</p>
           <h2 className="section-title">Rangliste & Form</h2>
+
           <p className="muted">Punkte, exakte Tipps, richtige Tendenzen und dein WM-Sieger-Bonus im Überblick.</p>
+
         </div>
         <button className="button ghost" onClick={fetchScoreboard} style={{ marginBottom: '12px' }}>
           Aktualisieren
@@ -42,8 +44,10 @@ function ScoreboardPage() {
               <th>Punkte</th>
               <th>Exakt</th>
               <th>Tendenz</th>
+
               <th>Champion</th>
               <th>Bonus</th>
+
             </tr>
           </thead>
           <tbody>
@@ -54,6 +58,7 @@ function ScoreboardPage() {
                 <td>{entry.points}</td>
                 <td>{entry.exact}</td>
                 <td>{entry.tendency}</td>
+
                 <td>
                   {entry.bonusChampion ? (
                     <span className="inline-flag">
@@ -64,6 +69,7 @@ function ScoreboardPage() {
                   )}
                 </td>
                 <td>{entry.bonusChampionPoints}</td>
+
               </tr>
             ))}
           </tbody>
