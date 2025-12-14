@@ -1,15 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { Link } from 'react-router-dom';
+
+
 const API_BASE = 'http://localhost:4000';
 
 const formatDateTime = (value) => new Date(value).toLocaleString();
 
 function GamesPage() {
   const [matches, setMatches] = useState([]);
+
+  const [teams, setTeams] = useState([]);
+
   const [userName, setUserName] = useState('');
   const [tipInputs, setTipInputs] = useState({});
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [championPick, setChampionPick] = useState('');
+  const [championStatus, setChampionStatus] = useState('');
+  const [championLocked, setChampionLocked] = useState(false);
+
 
   const fetchMatches = async () => {
     try {
@@ -25,6 +36,39 @@ function GamesPage() {
     }
   };
 
+
+  const fetchTeams = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/teams`);
+      const data = await res.json();
+      setTeams(data);
+    } catch (error) {
+      // still allow tipping without teams loaded
+    }
+  };
+
+  const loadChampionPick = async () => {
+    if (!userName) {
+      setChampionStatus('Bitte zuerst deinen Nutzernamen eintragen.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/bonus/champion/${encodeURIComponent(userName)}`);
+      const data = await res.json();
+      if (data.champion) {
+        setChampionPick(data.champion.teamCode);
+        setChampionStatus('Champion-Tipp geladen.');
+      } else {
+        setChampionStatus('Kein Champion-Tipp vorhanden, lege los!');
+      }
+      setChampionLocked(Boolean(data.locked));
+    } catch (error) {
+      setChampionStatus('Champion-Tipp konnte nicht geladen werden.');
+    }
+  };
+
+
   const fetchUserTips = async () => {
     if (!userName) {
       setStatus('Bitte zuerst deinen Nutzernamen eintragen, um Tipps zu laden.');
@@ -39,6 +83,9 @@ function GamesPage() {
       }, {});
       setTipInputs((prev) => ({ ...prev, ...mapped }));
       setStatus(tips.length ? 'Vorhandene Tipps geladen.' : 'Keine Tipps gefunden, lege los!');
+
+      loadChampionPick();
+
     } catch (error) {
       setStatus('Tipps konnten nicht geladen werden.');
     }
@@ -46,7 +93,36 @@ function GamesPage() {
 
   useEffect(() => {
     fetchMatches();
+
+    fetchTeams();
   }, []);
+
+  const handleChampionSubmit = async () => {
+    if (!userName || !championPick) {
+      setChampionStatus('Bitte Nutzername und einen Tipp auswählen.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/bonus/champion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName, teamCode: championPick }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setChampionStatus(data.error || 'Champion-Tipp fehlgeschlagen.');
+        setChampionLocked(Boolean(data.locked));
+        return;
+      }
+
+      setChampionStatus(`Champion-Tipp gespeichert: ${data.team?.flag ?? ''} ${data.team?.name ?? championPick}`.trim());
+    } catch (error) {
+      setChampionStatus('Champion-Tipp fehlgeschlagen.');
+    }
+  };
+
 
   const handleTipChange = (matchId, field, value) => {
     setTipInputs((prev) => ({
@@ -103,6 +179,12 @@ function GamesPage() {
     }, {});
   }, [matches]);
 
+
+  const sortedTeams = useMemo(
+    () => [...teams].sort((a, b) => a.name.localeCompare(b.name)),
+    [teams],
+  );
+
   return (
     <div>
       <div className="page-header">
@@ -132,6 +214,45 @@ function GamesPage() {
           Meine Tipps laden
         </button>
       </div>
+
+
+      <section className="card">
+        <header className="card-header">
+          <div>
+            <p className="eyebrow">Bonus</p>
+            <h3 className="card-title">WM-Sieger 2026 tippen</h3>
+            <p className="muted small">Flaggen, Klick auf Teams und nur bis zum globalen Tipp-Schluss bearbeitbar.</p>
+          </div>
+          <button className="button ghost" onClick={loadChampionPick}>
+            Champion laden
+          </button>
+        </header>
+        <div className="card-body">
+          <div className="form-row">
+            <label htmlFor="champion-select">Dein Sieger</label>
+            <select
+              id="champion-select"
+              className="input wide"
+              value={championPick}
+              onChange={(e) => setChampionPick(e.target.value)}
+              disabled={championLocked}
+            >
+              <option value="">Bitte wählen</option>
+              {sortedTeams.map((team) => (
+                <option key={team.code} value={team.code}>
+                  {team.flag} {team.name} ({team.groupId})
+                </option>
+              ))}
+            </select>
+            <button className="button" onClick={handleChampionSubmit} disabled={championLocked}>
+              {championLocked ? 'Gesperrt' : 'Champion speichern'}
+            </button>
+          </div>
+          {championLocked && <p className="muted small">Champion-Tipp ist gesperrt (Turnier gestartet).</p>}
+          {championStatus && <p className="status">{championStatus}</p>}
+        </div>
+      </section>
+
 
       {Object.keys(matchesByGroup)
         .sort()
@@ -163,7 +284,15 @@ function GamesPage() {
                     return (
                       <tr key={match.id}>
                         <td>
-                          <strong>{match.teamA}</strong> vs. <strong>{match.teamB}</strong>
+
+                          <Link to={`/teams/${match.teamACode}`} className="inline-flag">
+                            <span className="flag">{match.teamAFlag}</span> <strong>{match.teamA}</strong>
+                          </Link>{' '}
+                          vs.{' '}
+                          <Link to={`/teams/${match.teamBCode}`} className="inline-flag">
+                            <span className="flag">{match.teamBFlag}</span> <strong>{match.teamB}</strong>
+                          </Link>
+
                           <div className="muted small">
                             Ergebnis: {match.scoreA ?? '-'} : {match.scoreB ?? '-'}
                           </div>

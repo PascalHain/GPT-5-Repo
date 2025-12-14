@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 
+import { Link } from 'react-router-dom';
+
+
 const API_BASE = 'http://localhost:4000';
 
 function GroupOverviewPage() {
@@ -49,7 +52,15 @@ function GroupOverviewPage() {
               <div>
                 <p className="eyebrow">{group.id}</p>
                 <h3 className="card-title">{group.name}</h3>
-                <p className="muted">{group.teams.join(' · ')}</p>
+
+                <p className="muted">
+                  {group.teams.map((team) => (
+                    <Link key={team.code} to={`/teams/${team.code}`} className="inline-flag">
+                      <span className="flag">{team.flag}</span> {team.name}
+                    </Link>
+                  ))}
+                </p>
+
               </div>
             </header>
 
@@ -73,9 +84,15 @@ function GroupOverviewPage() {
                   </thead>
                   <tbody>
                     {group.standings.map((row) => (
-                      <tr key={row.team}>
+
+                      <tr key={row.teamCode}>
                         <td>{row.rank}</td>
-                        <td>{row.team}</td>
+                        <td>
+                          <Link to={`/teams/${row.teamCode}`} className="inline-flag">
+                            <span className="flag">{row.flag}</span> {row.team}
+                          </Link>
+                        </td>
+
                         <td>{row.played}</td>
                         <td>{row.wins}</td>
                         <td>{row.draws}</td>
@@ -99,7 +116,15 @@ function GroupOverviewPage() {
                     <div>
                       <p className="muted small">{game.venue}</p>
                       <p className="fixture-title">
-                        {game.teamA} vs. {game.teamB}
+
+                        <Link to={`/teams/${game.teamACode}`} className="inline-flag">
+                          <span className="flag">{game.teamAFlag}</span> {game.teamA}
+                        </Link>{' '}
+                        vs.{` `}
+                        <Link to={`/teams/${game.teamBCode}`} className="inline-flag">
+                          <span className="flag">{game.teamBFlag}</span> {game.teamB}
+                        </Link>
+
                       </p>
                       <p className="muted small">Anpfiff: {formatDate(game.kickoff)}</p>
                     </div>
