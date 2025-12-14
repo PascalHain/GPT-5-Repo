@@ -23,28 +23,53 @@ function ScoreboardPage() {
 
   return (
     <div>
-      <h1 className="section-title">Rangliste</h1>
-      <p>Zeigt die Summe aller Punkte pro Nutzer.</p>
-      <button className="button" onClick={fetchScoreboard} style={{ marginBottom: '12px' }}>
-        Aktualisieren
-      </button>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Nutzer</th>
-            <th>Punkte</th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((entry) => (
-            <tr key={entry.userName}>
-              <td>{entry.userName}</td>
-              <td>{entry.points}</td>
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">Ranking</p>
+          <h2 className="section-title">Rangliste & Form</h2>
+          <p className="muted">Punkte, exakte Tipps, richtige Tendenzen und dein WM-Sieger-Bonus im Überblick.</p>
+        </div>
+        <button className="button ghost" onClick={fetchScoreboard} style={{ marginBottom: '12px' }}>
+          Aktualisieren
+        </button>
+      </div>
+      <div className="table-wrapper">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Platz</th>
+              <th>Nutzer</th>
+              <th>Punkte</th>
+              <th>Exakt</th>
+              <th>Tendenz</th>
+              <th>Champion</th>
+              <th>Bonus</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {status && <p>{status}</p>}
+          </thead>
+          <tbody>
+            {entries.map((entry, index) => (
+              <tr key={entry.userName}>
+                <td>{index + 1}</td>
+                <td>{entry.userName}</td>
+                <td>{entry.points}</td>
+                <td>{entry.exact}</td>
+                <td>{entry.tendency}</td>
+                <td>
+                  {entry.bonusChampion ? (
+                    <span className="inline-flag">
+                      <span className="flag">{entry.bonusChampionFlag}</span> {entry.bonusChampion}
+                    </span>
+                  ) : (
+                    '–'
+                  )}
+                </td>
+                <td>{entry.bonusChampionPoints}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {status && <p className="status">{status}</p>}
     </div>
   );
 }
