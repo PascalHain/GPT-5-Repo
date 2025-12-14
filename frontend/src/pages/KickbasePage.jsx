@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const API_BASE = 'http://localhost:4000';
 const STORAGE_KEY = 'kickbase-wm-lineup';
@@ -184,6 +185,10 @@ function KickbasePage() {
   const [status, setStatus] = useState('');
   const [savedAt, setSavedAt] = useState('');
   const [activeTemplate, setActiveTemplate] = useState('');
+  const [selectedSlot, setSelectedSlot] = useState('gk');
+  const [activeSubTab, setActiveSubTab] = useState('startelf');
+  const [teamFilter, setTeamFilter] = useState('');
+  const [laneFilter, setLaneFilter] = useState('');
   const [lineup, setLineup] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -217,6 +222,13 @@ function KickbasePage() {
     const savedTime = localStorage.getItem(STORAGE_SAVED_AT_KEY);
     if (savedTime) setSavedAt(savedTime);
   }, []);
+
+  useEffect(() => {
+    const slot = lineup.find((item) => item.id === selectedSlot);
+    if (slot) {
+      setLaneFilter(slot.lane);
+    }
+  }, [selectedSlot, lineup]);
 
   const topTeams = useMemo(() => {
     if (teams.length === 0) {
@@ -266,6 +278,25 @@ function KickbasePage() {
     );
   };
 
+  const playerPool = useMemo(() => {
+    return topTeams.flatMap((team) => {
+      const template = bestXIByTeam[team.code];
+      if (!template) return [];
+
+      return baseSlots
+        .map((slot) => ({
+          id: `${team.code}-${slot.id}`,
+          player: template[slot.id] || '',
+          position: slot.label,
+          lane: slot.lane,
+          teamCode: team.code,
+          teamName: team.name,
+          flag: team.flag,
+        }))
+        .filter((entry) => entry.player);
+    });
+  }, [topTeams]);
+
   const applyTemplate = (teamCode) => {
     const template = bestXIByTeam[teamCode];
     if (!template) {
@@ -282,6 +313,7 @@ function KickbasePage() {
       })),
     );
     setStatus(`Startelf ${teamCode} übernommen – jetzt nach Wunsch anpassen.`);
+    setSelectedSlot('gk');
   };
 
   const handleSave = () => {
@@ -296,8 +328,40 @@ function KickbasePage() {
     localStorage.setItem(STORAGE_SAVED_AT_KEY, time);
   };
 
+  const assignPlayerToSlot = (slotId, playerEntry) => {
+    setLineup((prev) =>
+      prev.map((slot) =>
+        slot.id === slotId
+          ? {
+              ...slot,
+              player: playerEntry.player,
+              teamCode: playerEntry.teamCode,
+            }
+          : slot,
+      ),
+    );
+    setStatus(`${playerEntry.player} (${playerEntry.teamName}) gesetzt auf ${baseSlots.find((s) => s.id === slotId)?.label || 'Slot'}.`);
+  };
+
+  const filteredPool = useMemo(() => {
+    return playerPool.filter((entry) => {
+      const matchesTeam = teamFilter ? entry.teamCode === teamFilter : true;
+      const matchesLane = laneFilter ? entry.lane === laneFilter : true;
+      return matchesTeam && matchesLane;
+    });
+  }, [laneFilter, playerPool, teamFilter]);
+
   return (
     <div>
+      <div className="mode-tabs">
+        <Link className="mode-tab" to="/games">
+          Kicktipp (Tippspiel)
+        </Link>
+        <button className="mode-tab active" type="button">
+          Kickbase (Simulator)
+        </button>
+      </div>
+
       <div className="page-header">
         <div>
           <p className="eyebrow">Kickbase WM</p>
@@ -316,24 +380,41 @@ function KickbasePage() {
         <div className="step">
           <span className="pill tiny">1</span>
           <div>
-            <p className="muted very-small">Vorlage wählen</p>
-            <p className="step-title">Top-Team anklicken</p>
+            <p className="muted very-small">Modus wählen</p>
+            <p className="step-title">Kickbase Simulator aktiv</p>
           </div>
         </div>
         <div className="step">
           <span className="pill tiny">2</span>
           <div>
-            <p className="muted very-small">Positionen editieren</p>
-            <p className="step-title">Namen & Team setzen</p>
+            <p className="muted very-small">Vorlage klicken</p>
+            <p className="step-title">Top-Team übernehmen</p>
           </div>
         </div>
         <div className="step">
           <span className="pill tiny">3</span>
           <div>
-            <p className="muted very-small">Speichern</p>
-            <p className="step-title">Pitch sichern & erneut laden</p>
+            <p className="muted very-small">Slots füllen</p>
+            <p className="step-title">Spieler antippen & speichern</p>
           </div>
         </div>
+      </div>
+
+      <div className="subtabs">
+        <button
+          className={`subtab ${activeSubTab === 'startelf' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setActiveSubTab('startelf')}
+        >
+          Startelf & Pitch
+        </button>
+        <button
+          className={`subtab ${activeSubTab === 'scouting' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setActiveSubTab('scouting')}
+        >
+          Scouting & Spielerwahl
+        </button>
       </div>
 
       <section className="card">
@@ -391,101 +472,168 @@ function KickbasePage() {
         ))}
       </div>
 
-      <section className="card">
-        <header className="card-header lineup-head">
-          <div>
-            <p className="eyebrow">Aufstellung</p>
-            <h3 className="card-title">Startelf auf dem Spielfeld</h3>
-            <p className="muted small">Visuelles Feld mit 4-3-3 – Trainer entfallen, nur die beste Elf zählt.</p>
-          </div>
-          <div className="save-stack">
-            <div className="pill-stats">
-              <span className="pill">{filledCount}/11 Plätze besetzt</span>
-              <span className="pill ghost">Aktive Vorlage: {activeTemplate || 'frei'}</span>
+      {activeSubTab === 'startelf' && (
+        <section className="card">
+          <header className="card-header lineup-head">
+            <div>
+              <p className="eyebrow">Aufstellung</p>
+              <h3 className="card-title">Startelf auf dem Spielfeld</h3>
+              <p className="muted small">Visuelles Feld mit 4-3-3 – Slot antippen, dann Spieler aus dem Scouting wählen.</p>
             </div>
-            <button className="button" onClick={handleSave}>
-              Aufstellung speichern
-            </button>
-            {savedAt && <span className="save-indicator saved">Gespeichert um {savedAt}</span>}
-          </div>
-        </header>
-
-        <div className="lineup-layout">
-          <div className="pitch-panel">
-            <div className="pitch">
-              <div className="pitch-lines" aria-hidden />
-              <div className="pitch-legend">
-                <p className="muted tiny">4-3-3 mit klaren Lanes – klicke rechts für Anpassung.</p>
+            <div className="save-stack">
+              <div className="pill-stats">
+                <span className="pill">{filledCount}/11 Plätze besetzt</span>
+                <span className="pill ghost">Aktive Vorlage: {activeTemplate || 'frei'}</span>
               </div>
-              {lineup.map((slot) => {
-                const team = topTeams.find((t) => t.code === slot.teamCode);
-                return (
-                  <div key={slot.id} className="pitch-slot" style={{ left: `${slot.left}%`, top: `${slot.top}%` }}>
-                    <div className="player-chip">
-                      <span className="flag">{team?.flag || '⚽️'}</span>
-                      <div>
-                        <p className="player-name">{slot.player || 'Spieler wählen'}</p>
-                        <p className="muted tiny">{slot.label}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              <button className="button" onClick={handleSave}>
+                Aufstellung speichern
+              </button>
+              {savedAt && <span className="save-indicator saved">Gespeichert um {savedAt}</span>}
             </div>
-          </div>
+          </header>
 
-          <div className="lineup-editor">
-            <div className="lane-grid">
-              {lineup.map((slot) => (
-                <div key={slot.id} className="lineup-card">
-                  <div className="lineup-card-head">
-                    <p className="muted very-small">{slot.label}</p>
-                    <span className="pill tiny">{slot.id.toUpperCase()}</span>
-                  </div>
-                  <input
-                    className="input wide"
-                    value={slot.player}
-                    placeholder="Spielername"
-                    onChange={(e) => handleChange(slot.id, 'player', e.target.value)}
-                  />
-                  <select
-                    className="input wide"
-                    value={slot.teamCode}
-                    onChange={(e) => handleChange(slot.id, 'teamCode', e.target.value)}
-                  >
-                    <option value="">Team wählen</option>
-                    {topTeams.map((team) => (
-                      <option key={team.code} value={team.code}>
-                        {team.flag} {team.name}
-                      </option>
-                    ))}
-                  </select>
-                  {slot.teamCode && (
-                    <p className="muted very-small">{topTeams.find((t) => t.code === slot.teamCode)?.storyline || ''}</p>
-                  )}
+          <div className="lineup-layout">
+            <div className="pitch-panel">
+              <div className="pitch">
+                <div className="pitch-lines" aria-hidden />
+                <div className="pitch-legend">
+                  <p className="muted tiny">4-3-3 mit klaren Lanes – klicke einen Slot zum Bearbeiten.</p>
                 </div>
-                  ))}
-                </div>
-
-                <div className="usage-list">
-                  <p className="muted small">Team-Kontingent</p>
-                  {Object.keys(teamUsage).length === 0 && <p className="muted very-small">Noch keine Auswahl.</p>}
-              {Object.entries(teamUsage)
-                .sort(([, a], [, b]) => b - a)
-                .map(([code, count]) => {
-                  const team = topTeams.find((t) => t.code === code);
+                {lineup.map((slot) => {
+                  const team = topTeams.find((t) => t.code === slot.teamCode);
+                  const isActive = selectedSlot === slot.id;
                   return (
-                    <div key={code} className="usage-row">
-                      <span className="flag">{team?.flag}</span>
-                      <span className="muted small">{team?.name || code}</span>
-                      <span className="pill small">{count}x</span>
-                    </div>
+                    <button
+                      type="button"
+                      key={slot.id}
+                      className={`pitch-slot ${isActive ? 'active' : ''}`}
+                      style={{ left: `${slot.left}%`, top: `${slot.top}%` }}
+                      onClick={() => setSelectedSlot(slot.id)}
+                    >
+                      <div className="player-chip">
+                        <span className="flag">{team?.flag || '⚽️'}</span>
+                        <div>
+                          <p className="player-name">{slot.player || 'Spieler wählen'}</p>
+                          <p className="muted tiny">{slot.label}</p>
+                        </div>
+                      </div>
+                    </button>
                   );
                 })}
+              </div>
+            </div>
+
+            <div className="lineup-editor">
+              <div className="lane-grid">
+                {lineup.map((slot) => (
+                  <div key={slot.id} className={`lineup-card ${selectedSlot === slot.id ? 'selected' : ''}`}>
+                    <div className="lineup-card-head">
+                      <p className="muted very-small">{slot.label}</p>
+                      <span className="pill tiny">{slot.id.toUpperCase()}</span>
+                    </div>
+                    <div className="slot-actions">
+                      <button className="button ghost" type="button" onClick={() => setSelectedSlot(slot.id)}>
+                        Slot aktivieren
+                      </button>
+                      {slot.teamCode && slot.player && <span className="pill tiny positive">gesetzt</span>}
+                    </div>
+                    <input
+                      className="input wide"
+                      value={slot.player}
+                      placeholder="Spielername"
+                      onChange={(e) => handleChange(slot.id, 'player', e.target.value)}
+                    />
+                    <select
+                      className="input wide"
+                      value={slot.teamCode}
+                      onChange={(e) => handleChange(slot.id, 'teamCode', e.target.value)}
+                    >
+                      <option value="">Team wählen</option>
+                      {topTeams.map((team) => (
+                        <option key={team.code} value={team.code}>
+                          {team.flag} {team.name}
+                        </option>
+                      ))}
+                    </select>
+                    {slot.teamCode && (
+                      <p className="muted very-small">{topTeams.find((t) => t.code === slot.teamCode)?.storyline || ''}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="usage-list">
+                <p className="muted small">Team-Kontingent</p>
+                {Object.keys(teamUsage).length === 0 && <p className="muted very-small">Noch keine Auswahl.</p>}
+                {Object.entries(teamUsage)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([code, count]) => {
+                    const team = topTeams.find((t) => t.code === code);
+                    return (
+                      <div key={code} className="usage-row">
+                        <span className="flag">{team?.flag}</span>
+                        <span className="muted small">{team?.name || code}</span>
+                        <span className="pill small">{count}x</span>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {activeSubTab === 'scouting' && (
+        <section className="card">
+          <header className="card-header lineup-head">
+            <div>
+              <p className="eyebrow">Scouting</p>
+              <h3 className="card-title">Spieler antippen & Slot füllen</h3>
+              <p className="muted small">
+                Filtere nach Team oder Linie, tippe einen Spieler und er landet im aktiven Slot ({baseSlots.find((s) => s.id === selectedSlot)?.label}).
+              </p>
+            </div>
+            <div className="filter-bar">
+              <select className="input" value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
+                <option value="">Alle Teams</option>
+                {topTeams.map((team) => (
+                  <option key={team.code} value={team.code}>
+                    {team.flag} {team.name}
+                  </option>
+                ))}
+              </select>
+              <select className="input" value={laneFilter} onChange={(e) => setLaneFilter(e.target.value)}>
+                <option value="">Alle Linien</option>
+                <option value="keeper">Tor</option>
+                <option value="defense">Abwehr</option>
+                <option value="midfield">Mittelfeld</option>
+                <option value="attack">Angriff</option>
+              </select>
+            </div>
+          </header>
+
+          <div className="player-pool">
+            {filteredPool.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                className="player-card"
+                onClick={() => assignPlayerToSlot(selectedSlot, entry)}
+              >
+                <div className="player-card-head">
+                  <span className="flag big">{entry.flag}</span>
+                  <div>
+                    <p className="player-name">{entry.player}</p>
+                    <p className="muted very-small">{entry.teamName}</p>
+                  </div>
+                  <span className="pill tiny ghost">{entry.position}</span>
+                </div>
+                <p className="muted tiny">Antippen, um auf den aktiven Slot zu setzen.</p>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {status && <p className="status info">{status}</p>}
     </div>

@@ -179,6 +179,50 @@ a:hover {
   box-shadow: none;
 }
 
+.mode-tabs {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mode-tab {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mode-tab.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.subtabs {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.subtab {
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.subtab.active {
+  background: #0ea5e9;
+  color: #fff;
+  border-color: #0ea5e9;
+}
+
 .button:disabled {
   background: #a5b4fc;
   cursor: not-allowed;
@@ -559,6 +603,9 @@ a:hover {
   position: absolute;
   transform: translate(-50%, -50%);
   min-width: 160px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .player-chip {
@@ -571,6 +618,11 @@ a:hover {
   padding: 8px 10px;
   backdrop-filter: blur(4px);
   color: #f8fafc;
+}
+
+.pitch-slot.active .player-chip {
+  border-color: #22c55e;
+  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.35);
 }
 
 .player-name {
@@ -598,6 +650,56 @@ a:hover {
 .lineup-card input,
 .lineup-card select {
   width: 100%;
+}
+
+.lineup-card.selected {
+  border: 1px solid #2563eb;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+}
+
+.slot-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill.positive {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.player-pool {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.player-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.player-card:hover {
+  border-color: #2563eb;
+}
+
+.player-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
 }
 
 @media (max-width: 900px) {
