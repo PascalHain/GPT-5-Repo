@@ -1,0 +1,15 @@
+{
+  "name": "kicktipp-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root helper scripts for the Kicktipp-style fullstack app",
+  "scripts": {
+    "install:backend": "npm --prefix backend install",
+    "install:frontend": "npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start:backend": "npm --prefix backend start",
+    "build:frontend": "npm --prefix frontend run build",
+    "preview:frontend": "npm --prefix frontend run preview"
+  }
+}
