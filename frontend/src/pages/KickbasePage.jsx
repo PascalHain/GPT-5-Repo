@@ -50,7 +50,7 @@ const bestXIByTeam = {
     cb2: 'William Saliba',
     rb: 'Jules Koundé',
     dm: 'Aurélien Tchouaméni',
-    cm: 'Jude Bellingham',
+    cm: 'Eduardo Camavinga',
     am: 'Antoine Griezmann',
     lw: 'Kylian Mbappé',
     st: 'Olivier Giroud',
@@ -113,11 +113,11 @@ const bestXIByTeam = {
 const flagForTeam = (code) => kickbaseFavorites.find((t) => t.code === code)?.flag || '🏳️';
 
 const buildPlayerPool = () => {
-  const pool = [];
+  const fullPool = [];
   topTeamCodes.forEach((code) => {
     const lineup = bestXIByTeam[code];
     Object.entries(lineup).forEach(([position, name]) => {
-      pool.push({
+      fullPool.push({
         id: `${code}-${position}`,
         name,
         position,
@@ -126,11 +126,33 @@ const buildPlayerPool = () => {
       });
     });
   });
-  for (let i = pool.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  return pool.slice(0, 12);
+
+  const lanes = {
+    keeper: ['gk'],
+    defense: ['lb', 'cb1', 'cb2', 'rb'],
+    midfield: ['dm', 'cm', 'am'],
+    attack: ['lw', 'st', 'rw'],
+  };
+
+  const pickFrom = (positions, count) => {
+    const candidates = fullPool.filter((p) => positions.includes(p.position));
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
+  const curated = [
+    ...pickFrom(lanes.keeper, 1),
+    ...pickFrom(lanes.defense, 3),
+    ...pickFrom(lanes.midfield, 3),
+    ...pickFrom(lanes.attack, 3),
+  ];
+
+  const remainder = fullPool
+    .filter((p) => !curated.find((c) => c.id === p.id))
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 2);
+
+  return [...curated, ...remainder].slice(0, 12);
 };
 
 const seedLineupFromPool = (pool) =>
@@ -153,6 +175,8 @@ function KickbasePage() {
   const [savedAt, setSavedAt] = useState('');
   const [activeTab, setActiveTab] = useState('team');
   const [status, setStatus] = useState('');
+  const [teamFilter, setTeamFilter] = useState('all');
+  const [positionFilter, setPositionFilter] = useState('all');
 
   useEffect(() => {
     const storedLineup = localStorage.getItem(STORAGE_KEY);
@@ -205,12 +229,42 @@ function KickbasePage() {
     setStatus('Neuer 12er-Pool geladen und 4-3-3 befüllt.');
   };
 
+  const applyTemplate = (teamCode) => {
+    const template = bestXIByTeam[teamCode];
+    if (!template) return;
+
+    const next = baseSlots.map((slot) => {
+      const name = template[slot.id];
+      if (!name) return { ...slot };
+      return {
+        ...slot,
+        player: name,
+        teamCode,
+        flag: flagForTeam(teamCode),
+        fromPoolId: `${teamCode}-${slot.id}`,
+      };
+    });
+    setLineup(next);
+    setStatus(`${flagForTeam(teamCode)} ${teamCode} Vorlage übernommen.`);
+  };
+
   const selectedData = lineup.find((slot) => slot.id === selectedSlot) || lineup[0];
 
   const unassignedPool = useMemo(() => {
     const usedIds = new Set(lineup.map((slot) => slot.fromPoolId));
     return playerPool.filter((p) => !usedIds.has(p.id));
   }, [lineup, playerPool]);
+
+  const filteredPool = playerPool.filter((p) => {
+    const byTeam = teamFilter === 'all' || p.teamCode === teamFilter;
+    const byPos =
+      positionFilter === 'all' ||
+      p.position === positionFilter ||
+      (positionFilter === 'defense' && ['lb', 'cb1', 'cb2', 'rb'].includes(p.position)) ||
+      (positionFilter === 'midfield' && ['dm', 'cm', 'am'].includes(p.position)) ||
+      (positionFilter === 'attack' && ['lw', 'st', 'rw'].includes(p.position));
+    return byTeam && byPos;
+  });
 
   return (
     <div className="stack-xl">
@@ -242,8 +296,43 @@ function KickbasePage() {
               </button>
             </div>
             <p className="muted">Tippe einen Slot auf dem Feld an und klicke dann einen Spieler, um ihn zuzuweisen.</p>
+
+            <div className="filter-row">
+              <div className="pill-row">
+                <button className={teamFilter === 'all' ? 'pill active' : 'pill'} onClick={() => setTeamFilter('all')}>
+                  Alle Teams
+                </button>
+                {kickbaseFavorites.map((team) => (
+                  <button
+                    key={team.code}
+                    className={teamFilter === team.code ? 'pill active' : 'pill'}
+                    onClick={() => setTeamFilter(team.code)}
+                  >
+                    {team.flag} {team.name}
+                  </button>
+                ))}
+              </div>
+              <div className="pill-row wrap">
+                {[
+                  { id: 'all', label: 'Alle Positionen' },
+                  { id: 'gk', label: 'Torhüter' },
+                  { id: 'defense', label: 'Abwehr' },
+                  { id: 'midfield', label: 'Mittelfeld' },
+                  { id: 'attack', label: 'Angriff' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    className={positionFilter === opt.id ? 'pill active' : 'pill'}
+                    onClick={() => setPositionFilter(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="player-pool">
-              {playerPool.map((player) => (
+              {filteredPool.map((player) => (
                 <button key={player.id} className="player-chip" onClick={() => assignPlayer(selectedSlot, player)}>
                   <span className="flag">{player.flag}</span>
                   <div>
@@ -280,6 +369,13 @@ function KickbasePage() {
               <div>
                 <p className="eyebrow">Ausgewählt</p>
                 <h3>{selectedData?.label}</h3>
+              </div>
+              <div className="pill-row wrap">
+                {kickbaseFavorites.map((team) => (
+                  <button key={team.code} className="pill" onClick={() => applyTemplate(team.code)}>
+                    Vorlage {team.flag} {team.name}
+                  </button>
+                ))}
               </div>
               <div className="field-group">
                 <label>Spielername anpassen</label>

@@ -87,7 +87,8 @@ npm run preview
 - `/groups` → WM-Gruppen mit Tabelle, Flaggen und Spielplan (innerhalb Kicktipp genutzt).
 - `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps, Tendenzen und Champion-Bonus (innerhalb Kicktipp genutzt).
 - `/teams/:code` → Team-Detail (Flagge, Kurzinfos, anstehende Spiele).
-- `/kickbase` → Kickbase-Dashboard mit Unterreitern Team, News, Transfermarkt, Live-Punkte und einem 4-3-3 Pitch samt 12er-Pool.
+- `/kickbase` → Kickbase-Dashboard mit Unterreitern Team, News, Transfermarkt, Live-Punkte, Filterchips für Nation/Position,
+  Vorlagen-Buttons pro Top-Team und einem 4-3-3 Pitch samt kuratiertem 12er-Pool.
 
 ## So startest du das komplette Projekt
 1. Backend starten (`npm run dev` im Ordner `backend`). Server läuft auf **http://localhost:4000**.

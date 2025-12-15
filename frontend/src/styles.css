@@ -900,6 +900,17 @@ a:hover {
   gap: 8px;
 }
 
+.pill.active {
+  background: #312e81;
+  color: #f8fafc;
+  border-color: #312e81;
+}
+
+.filter-row {
+  display: grid;
+  gap: 10px;
+}
+
 .card h2 {
   margin-bottom: 6px;
 }
