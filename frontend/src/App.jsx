@@ -39,6 +39,8 @@ function App() {
           <Route path="/kicktipp/groups" element={<KicktippPage initialTab="groups" />} />
           <Route path="/kicktipp/info" element={<KicktippPage initialTab="info" />} />
           <Route path="/kicktipp/tipps" element={<KicktippPage initialTab="tipps" />} />
+          <Route path="/kicktipp/bracket" element={<KicktippPage initialTab="bracket" />} />
+          <Route path="/kicktipp/calendar" element={<KicktippPage initialTab="calendar" />} />
           <Route path="/kickbase" element={<KickbasePage />} />
           <Route path="/teams/:code" element={<TeamPage />} />
           <Route path="/games" element={<GamesPage />} />

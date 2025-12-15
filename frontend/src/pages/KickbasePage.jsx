@@ -201,13 +201,29 @@ function KickbasePage() {
   }, []);
 
   const assignPlayer = (slotId, player) => {
-    setLineup((prev) =>
-      prev.map((slot) =>
-        slot.id === slotId ? { ...slot, player: player.name, teamCode: player.teamCode, flag: player.flag, fromPoolId: player.id } : slot,
-      ),
-    );
+    setLineup((prev) => {
+      const alreadySlot = prev.find((slot) => slot.fromPoolId === player.id);
+
+      return prev.map((slot) => {
+        if (slot.id === slotId) {
+          return { ...slot, player: player.name, teamCode: player.teamCode, flag: player.flag, fromPoolId: player.id };
+        }
+
+        if (alreadySlot && slot.id === alreadySlot.id && slot.id !== slotId) {
+          return { ...slot, player: '', teamCode: '', flag: '', fromPoolId: undefined };
+        }
+
+        return slot;
+      });
+    });
+
+    const alreadySlot = lineup.find((slot) => slot.fromPoolId === player.id);
     setSelectedSlot(slotId);
-    setStatus(`${player.flag} ${player.name} in ${slotId.toUpperCase()} übernommen.`);
+    setStatus(
+      alreadySlot && alreadySlot.id !== slotId
+        ? `${player.flag} ${player.name} von ${alreadySlot.label} nach ${slotId.toUpperCase()} verschoben.`
+        : `${player.flag} ${player.name} in ${slotId.toUpperCase()} übernommen.`,
+    );
   };
 
   const updateName = (slotId, name) => {
@@ -265,6 +281,8 @@ function KickbasePage() {
       (positionFilter === 'attack' && ['lw', 'st', 'rw'].includes(p.position));
     return byTeam && byPos;
   });
+
+  const usedPoolIds = useMemo(() => new Set(lineup.map((slot) => slot.fromPoolId).filter(Boolean)), [lineup]);
 
   return (
     <div className="stack-xl">
@@ -332,15 +350,24 @@ function KickbasePage() {
             </div>
 
             <div className="player-pool">
-              {filteredPool.map((player) => (
-                <button key={player.id} className="player-chip" onClick={() => assignPlayer(selectedSlot, player)}>
-                  <span className="flag">{player.flag}</span>
-                  <div>
-                    <strong>{player.name}</strong>
-                    <p className="muted">{player.teamCode} · {player.position.toUpperCase()}</p>
-                  </div>
-                </button>
-              ))}
+              {filteredPool.map((player) => {
+                const alreadyUsed = usedPoolIds.has(player.id);
+                return (
+                  <button
+                    key={player.id}
+                    className={alreadyUsed ? 'player-chip used' : 'player-chip'}
+                    onClick={() => assignPlayer(selectedSlot, player)}
+                    aria-label={alreadyUsed ? 'Bereits gesetzt, zum Verschieben anklicken' : 'Zum Zuweisen anklicken'}
+                  >
+                    <span className="flag">{player.flag}</span>
+                    <div>
+                      <strong>{player.name}</strong>
+                      <p className="muted">{player.teamCode} · {player.position.toUpperCase()}</p>
+                    </div>
+                    {alreadyUsed && <span className="chip-tag">In Aufstellung</span>}
+                  </button>
+                );
+              })}
             </div>
             <div className="muted small">Verbleibend unverplant: {unassignedPool.length} Spieler</div>
           </div>

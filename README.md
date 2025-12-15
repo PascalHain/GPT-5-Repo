@@ -9,7 +9,8 @@ Eine einfache Fullstack-Web-App zum Tippen von Spielergebnissen ähnlich Kicktip
 - Gruppenübersicht mit Tabelle und Fixture-Liste für die WM 2026 (Gruppen A–L, 48 Teams).
 - Bonus-Tipp auf den Weltmeister mit Flaggen-Auswahl und Sperrfrist.
 - Kickbase-inspirierte Aufstellungsseite mit zehn Top-Nationen (inkl. Deutschland), Dashboard-Switch zwischen Kicktipp &
-  Kickbase, Team/News/Transfermarkt/Live-Punkte-Untertabs und ein 4-3-3 Pitch mit zufälligem 12er-Pool.
+  Kickbase, Team/News/Transfermarkt/Live-Punkte-Untertabs und ein 4-3-3 Pitch mit zufälligem 12er-Pool und eindeutigen Spielern.
+- Turnierbaum- und Kalender-Ansicht für den Kicktipp-Modus, damit Knockout-Pfad und Vorrunden-Schedule schnell greifbar sind.
 
 ## Ordnerstruktur
 ```
@@ -82,7 +83,7 @@ npm run preview
 
 ### Seiten
 - `/dashboard` → Einstiegs-Dashboard mit Kacheln für Kicktipp und Kickbase.
-- `/kicktipp` → Zentraler Kicktipp-Modus mit Tabs für Gruppen, Spielinfos (Briefing + Rangliste) und Tippen.
+- `/kicktipp` → Zentraler Kicktipp-Modus mit Tabs für Gruppen, Spielinfos (Briefing + Rangliste), Tippen, Turnierbaum und Spielkalender.
 - `/games` → Spiele-Liste nach Gruppe, Eingabe und Laden von Tipps pro Spiel sowie Champion-Bonus-Tipp (innerhalb Kicktipp genutzt).
 - `/groups` → WM-Gruppen mit Tabelle, Flaggen und Spielplan (innerhalb Kicktipp genutzt).
 - `/scoreboard` → Rangliste mit Gesamtpunkten, exakten Tipps, Tendenzen und Champion-Bonus (innerhalb Kicktipp genutzt).
